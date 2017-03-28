@@ -19,19 +19,7 @@
     <script>
         function createPanel($trigger, $panel) {
             $trigger.panel({
-                events: {
-                    onAjaxDone: function (trigger, panel, el, data, textStatus, jqXHR) {},
-                    onAjaxFail: function (trigger, panel, jqXHR, textStatus, errorThrown) {},
-                    onBeforeClose: function (trigger, panel) {
-                        //return false cancel
-                    },
-                    onBeforeOpen: function (trigger, panel) {
-                        //return false cancel
-                    },
-                    onClose: function (trigger, panel) {},
-                    onOpen: function (trigger, panel) {}
-                },
-                panel: $panel,
+                panel: $panel
             });
         }
 
