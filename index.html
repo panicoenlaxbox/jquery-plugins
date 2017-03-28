@@ -1,0 +1,49 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>jQuery Plugins</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="jquery.panel.css">
+</head>
+
+<body>
+    <h1>jQuery Panel</h1>
+    <input type="button" value="Open" id="trigger" />
+    <div id="panel" style="display: none;">Sergio</div>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="jquery.panel.js"></script>
+    <script>
+        function createPanel($trigger, $panel) {
+            $trigger.panel({
+                events: {
+                    onAjaxDone: function (trigger, panel, el, data, textStatus, jqXHR) {},
+                    onAjaxFail: function (trigger, panel, jqXHR, textStatus, errorThrown) {},
+                    onBeforeClose: function (trigger, panel) {
+                        //return false cancel
+                    },
+                    onBeforeOpen: function (trigger, panel) {
+                        //return false cancel
+                    },
+                    onClose: function (trigger, panel) {},
+                    onOpen: function (trigger, panel) {}
+                },
+                panel: $panel,
+            });
+        }
+
+        $(function () {
+            var $trigger = $("#trigger");
+            var $panel = $("#panel");
+            createPanel($trigger, $panel);
+            $("#button1").on("click", function () {
+                $trigger.panel("open");
+            });
+        });
+    </script>
+</body>
+
+</html>
