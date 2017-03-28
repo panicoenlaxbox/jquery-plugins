@@ -10,7 +10,7 @@
         if (tag) {
             message = tag + ": " + message;
         }
-        console.log(message);
+        //console.log(message);
     }
 
     var openedTriggers = [];
