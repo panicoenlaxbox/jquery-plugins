@@ -34,13 +34,17 @@
         }
 
         return data;
-    }    
+    }
+
+    function getRandomTag() {
+        return Math.random().toString(36).substr(2, 5);
+    }
 
     function log(message, tag) {
         if (tag) {
             message = tag + ": " + message;
         }
-        //console.log(message);
+        console.log(message);
     }
 
     var openedTriggers = [];
@@ -60,10 +64,8 @@
             }
         }
         log("onBeforeClose", data.tag);
-        if (data.events.onBeforeClose) {
-            if (data.events.onBeforeClose(this, data.panel) === false) {
-                return false;
-            }
+        if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
+            return false;
         }
         $trigger.removeClass("tab-panel-trigger-opened");
         $(data._overlay).remove();
@@ -226,7 +228,7 @@
         });
     }
 
-    function open(e) {
+    function open(e, animation) {
         // this DOM element
         var $trigger = $(this);
         var data = $trigger.data(pluginKey);
@@ -236,19 +238,13 @@
         if (!data._parentTrigger && openedTriggers.length > 0) {
             close.call(openedTriggers[0], e);
         }
-        var retval;
         if (data._parentTrigger) {
-            retval = open.call(data._parentTrigger, e);
-            if (retval === false) {
+            if (open.call(data._parentTrigger, e, false) === false)
                 return false;
-            }
         }
         log("onBeforeOpen", data.tag);
-        if (data.events.onBeforeOpen) {
-            retval = data.events.onBeforeOpen(this, data.panel);
-            if (retval === false) {
-                return false;
-            }
+        if ((data.events.onBeforeOpen || $.noop)(this, data.panel) === false) {
+            return false;
         }
         $trigger.addClass("tab-panel-trigger-opened");
         var $panel = $(data.panel);
@@ -297,7 +293,8 @@
         });
         $("body").append($overlay);
         data._overlay = $overlay[0];
-        if (data.animation.active && !data.centered) {
+        animation = animation === undefined ? data.animation.active : animation;
+        if (animation && !data.centered) {
             $panel.hide();
             $panel.show("slide", {
                 direction: data.animation.direction
@@ -311,8 +308,8 @@
     }
 
     function destroy() {
-        var $this = $(this);
-        var data = $this.data(pluginKey);
+        var $trigger = $(this);
+        var data = $trigger.data(pluginKey);
         if (data) {
             if (data._opened) {
                 close.call(this);
@@ -332,10 +329,11 @@
             restoreAttr($panel, "style", data._originalPanelStyle);
             restoreAttr($panel, "class", data._originalPanelClass);
             $panel.removeData(pluginKey);
-            $this.off(".panel");
-            restoreAttr($this, "style", data._originalTriggerStyle);
-            restoreAttr($this, "class", data._originalTriggerClass);
-            $this.removeData(pluginKey);
+            $trigger.off(".panel");
+            $trigger.removeAttr("data-random-tag");
+            restoreAttr($trigger, "style", data._originalTriggerStyle);
+            restoreAttr($trigger, "class", data._originalTriggerClass);
+            $trigger.removeData(pluginKey);
         }
     }
 
@@ -379,6 +377,10 @@
                     settings._originalTriggerStyle = $trigger.attr("style");
                     settings._originalPanelClass = $panel.attr("class");
                     settings._originalPanelStyle = $panel.attr("style");
+                    if (!settings.tag) {
+                        settings.tag = getRandomTag();
+                        $trigger.attr("data-random-tag", settings.tag);
+                    }
                     $trigger.addClass("tab-panel-trigger");
                     $trigger.on("click.panel", function (e) {
                         log("trigger click.panel", settings.tag);
