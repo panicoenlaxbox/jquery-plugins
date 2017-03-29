@@ -6,6 +6,36 @@
 (function ($) {
     "use strict";
 
+    var pluginKey = "_panel";
+
+    // http://stackoverflow.com/a/36711150
+    function parseDataSet(data_set) {
+        var data = {};
+        for (var i = 0; i < Object.keys(data_set).length; i++) {
+            var key = Object.keys(data_set)[i];
+            data = parseDataSetKey(key.split('-'), data_set[key], data);
+        }
+        return data;
+    }
+
+    function parseDataSetKey(keys, value, data) {
+        data = data || {};
+        var key = _.camelCase(keys[0]);
+
+        if (!data[key]) {
+            data[key] = {};
+        }
+
+        if (keys.length > 1) {
+            keys.splice(0, 1);
+            data[key] = parseDataSetKey(keys, value, data[key]);
+        } else {
+            data[key] = value;
+        }
+
+        return data;
+    }    
+
     function log(message, tag) {
         if (tag) {
             message = tag + ": " + message;
@@ -18,7 +48,7 @@
     function close(e) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data("panel");
+        var data = $trigger.data(pluginKey);
         if (!data._opened) {
             return true;
         }
@@ -50,6 +80,9 @@
         if (data.events.onClose) {
             data.events.onClose(this, data.panel);
         }
+        if (data.destroyOnClose) {
+            destroy.call(this);
+        }
         return true;
     }
 
@@ -66,7 +99,7 @@
 
         var currentOpenedTrigger = openedTriggers[openedTriggers.length - 1];
         var $target = $(e.target);
-        var data = $(currentOpenedTrigger).data("panel");
+        var data = $(currentOpenedTrigger).data(pluginKey);
 
         if ($target.is(data._overlay) && !data.overlay.modal) {
             close.call(currentOpenedTrigger);
@@ -127,7 +160,7 @@
     }
 
     function openedPanel($trigger) {
-        var data = $trigger.data("panel");
+        var data = $trigger.data(pluginKey);
         data._opened = true;
         var trigger = $trigger[0];
         if (!data._parentTrigger) {
@@ -160,18 +193,18 @@
     }
 
     function calculateContentHeight($trigger) {
-        var data = $trigger.data("panel");
+        var data = $trigger.data(pluginKey);
         if (!data.calculateContentHeight) {
             return;
         }
         var $panel = $(data.panel);
         var height = $panel.height();
-        var $el = $panel.find(".tab-content, [data-role='content']").first();
+        var $el = $panel.find(data.calculateContentHeight.selector).first();
         if ($el.length === 0) {
             return;
         }
         $el.siblings().each(function (index, element) {
-            height -= $(this).height();
+            height -= $(this).outerHeight(true);
         });
         $el.css({
             overflow: "auto"
@@ -196,7 +229,7 @@
     function open(e) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data("panel");
+        var data = $trigger.data(pluginKey);
         if (data._opened) {
             return true;
         }
@@ -277,14 +310,44 @@
         return true;
     }
 
+    function destroy() {
+        var $this = $(this);
+        var data = $this.data(pluginKey);
+        if (data) {
+            if (data._opened) {
+                close.call(this);
+            }
+            if (data._childTriggers) {
+                for (var i = 0; i < data._childTriggers.length; i++) {
+                    methods.destroy.call($(data._childTriggers[i]));
+                }
+            }
+            if (data._parentTrigger) {
+                var _parentChildTriggers = $(data._parentTrigger).data(pluginKey)._childTriggers;
+                var index = $.inArray(this, _parentChildTriggers);
+                _parentChildTriggers.splice(index, 1);
+            }
+            var $panel = $(data.panel);
+            $panel.off(".panel");
+            restoreAttr($panel, "style", data._originalPanelStyle);
+            restoreAttr($panel, "class", data._originalPanelClass);
+            $panel.removeData(pluginKey);
+            $this.off(".panel");
+            restoreAttr($this, "style", data._originalTriggerStyle);
+            restoreAttr($this, "class", data._originalTriggerClass);
+            $this.removeData(pluginKey);
+        }
+    }
+
     var methods = {
         init: function (options) {
             // this jQuery object
             return this.each(function () {
                 // this DOM element
-                var settings = $.extend(true, {}, $.fn.panel.defaults, options);
+                var dataSet = parseDataSet($(this).data());
+                var settings = $.extend(true, {}, $.fn.panel.defaults, dataSet, options);
                 var $trigger = $(this);
-                if (!$trigger.data("panel")) {
+                if (!$trigger.data(pluginKey)) {
                     if (!settings.position.of) {
                         settings.position.of = this;
                     } else if (typeof settings.position.of === "function") {
@@ -294,12 +357,18 @@
                     } else {
                         settings.position.of = getDomElement(settings.position.of);
                     }
+                    if (typeof (settings.panel) === "string") {
+                        settings.panel = $(settings.panel);
+                    }
                     settings.panel = getDomElement(settings.panel);
                     var $panel = $(settings.panel);
-                    if (settings.parent.trigger) {
-                        var $parentTrigger = getjQueryElement(settings.parent.trigger);
+                    if (typeof (settings.parentTrigger) === "string") {
+                        settings.parentTrigger = $(settings.parentTrigger);
+                    }
+                    if (settings.parentTrigger) {
+                        var $parentTrigger = getjQueryElement(settings.parentTrigger);
                         settings._parentTrigger = $parentTrigger[0];
-                        var parentTriggerData = $parentTrigger.data("panel");
+                        var parentTriggerData = $parentTrigger.data(pluginKey);
                         settings._parentPanel = parentTriggerData.panel;
                         if (!parentTriggerData._childTriggers) {
                             parentTriggerData._childTriggers = [];
@@ -348,8 +417,8 @@
                             }
                         }
                     });
-                    $trigger.data("panel", settings);
-                    $panel.data("panel", {
+                    $trigger.data(pluginKey, settings);
+                    $panel.data(pluginKey, {
                         trigger: this
                     });
                 }
@@ -364,33 +433,9 @@
             close.call(this[0]);
         },
         destroy: function () {
+            // this jQuery object
             return this.each(function () {
-                var $this = $(this);
-                var data = $this.data("panel");
-                if (data) {
-                    if (data._opened) {
-                        close.call(this);
-                    }
-                    if (data._childTriggers) {
-                        for (var i = 0; i < data._childTriggers.length; i++) {
-                            methods.destroy.call($(data._childTriggers[i]));
-                        }
-                    }
-                    if (data._parentTrigger) {
-                        var _parentChildTriggers = $(data._parentTrigger).data("panel")._childTriggers;
-                        var index = $.inArray(this, _parentChildTriggers);
-                        _parentChildTriggers.splice(index, 1);
-                    }
-                    var $panel = $(data.panel);
-                    $panel.off(".panel");
-                    restoreAttr($panel, "style", data._originalPanelStyle);
-                    restoreAttr($panel, "class", data._originalPanelClass);
-                    $panel.removeData("panel");
-                    $this.off(".panel");
-                    restoreAttr($this, "style", data._originalTriggerStyle);
-                    restoreAttr($this, "class", data._originalTriggerClass);
-                    $this.removeData("panel");
-                }
+                destroy.call(this);
             });
         }
     };
@@ -414,6 +459,7 @@
     };
 
     $.fn.panel.defaults = {
+        destroyOnClose: false,
         animation: {
             active: true,
             direction: "up",
@@ -426,7 +472,7 @@
             removeContentBeforeLoad: false,
             url: null
         },
-        closePanelSelector: null,
+        closePanelSelector: "[data-role='close']",
         events: {
             onAjaxDone: null,
             onAjaxFail: null,
@@ -449,9 +495,7 @@
             top: 0
         },
         panel: null,
-        parent: {
-            trigger: null
-        },
+        parentTrigger: null,
         position: {
             my: "left top", // default "center"
             at: "left bottom", // default "center"
@@ -475,8 +519,8 @@
             return {
                 positioning: function (panel) {
                     var $panel = getjQueryElement(panel);
-                    var $trigger = $($panel.data("panel").trigger);
-                    var data = $trigger.data("panel");
+                    var $trigger = $($panel.data(pluginKey).trigger);
+                    var data = $trigger.data(pluginKey);
                     if (!data.centered) {
                         positioning($panel, data.position, data.offset);
                     }
@@ -484,7 +528,7 @@
                 getOpenedByTag: function (tag) {
                     for (var i = 0; i < openedTriggers.length; i++) {
                         var $trigger = $(openedTriggers[i]);
-                        var data = $trigger.data("panel");
+                        var data = $trigger.data(pluginKey);
                         if (data.tag === tag) {
                             return {
                                 trigger: $trigger[0],
@@ -495,12 +539,12 @@
                 },
                 getTrigger: function (panel) {
                     var $panel = getjQueryElement(panel);
-                    var $trigger = $($panel.data("panel").trigger);
+                    var $trigger = $($panel.data(pluginKey).trigger);
                     return $trigger[0];
                 },
                 getPanel: function (trigger) {
                     var $trigger = getjQueryElement(trigger);
-                    var $panel = $($trigger.data("panel").panel);
+                    var $panel = $($trigger.data(pluginKey).panel);
                     return $panel[0];
                 },
                 getParentPanel: function (el) {
