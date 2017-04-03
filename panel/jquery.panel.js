@@ -6,35 +6,7 @@
 (function ($) {
     "use strict";
 
-    var pluginKey = "_panel";
-
-    // http://stackoverflow.com/a/36711150
-    function parseDataSet(data_set) {
-        var data = {};
-        for (var i = 0; i < Object.keys(data_set).length; i++) {
-            var key = Object.keys(data_set)[i];
-            data = parseDataSetKey(key.split('-'), data_set[key], data);
-        }
-        return data;
-    }
-
-    function parseDataSetKey(keys, value, data) {
-        data = data || {};
-        var key = _.camelCase(keys[0]);
-
-        if (!data[key]) {
-            data[key] = {};
-        }
-
-        if (keys.length > 1) {
-            keys.splice(0, 1);
-            data[key] = parseDataSetKey(keys, value, data[key]);
-        } else {
-            data[key] = value;
-        }
-
-        return data;
-    }
+    var dataKey = "_panel";
 
     function log(message, tag) {
         if (tag) {
@@ -48,7 +20,7 @@
     function close(e) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data(dataKey);
         if (!data._opened) {
             return true;
         }
@@ -97,7 +69,7 @@
 
         var currentOpenedTrigger = openedTriggers[openedTriggers.length - 1];
         var $target = $(e.target);
-        var data = $(currentOpenedTrigger).data(pluginKey);
+        var data = $(currentOpenedTrigger).data(dataKey);
 
         if ($target.is(data._overlay) && !data.overlay.modal) {
             close.call(currentOpenedTrigger);
@@ -158,7 +130,7 @@
     }
 
     function openedPanel($trigger) {
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data(dataKey);
         data._opened = true;
         var trigger = $trigger[0];
         if (!data._parentTrigger) {
@@ -191,7 +163,7 @@
     }
 
     function calculateContentHeight($trigger) {
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data(dataKey);
         if (!data.calculateContentHeight) {
             return;
         }
@@ -243,7 +215,7 @@
     function open(e, animation) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data(dataKey);
         if (data._opened) {
             return true;
         }
@@ -321,7 +293,7 @@
 
     function destroy() {
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data(dataKey);
         if (data) {
             if (data._opened) {
                 close.call(this);
@@ -332,7 +304,7 @@
                 }
             }
             if (data._parentTrigger) {
-                var _parentChildTriggers = $(data._parentTrigger).data(pluginKey)._childTriggers;
+                var _parentChildTriggers = $(data._parentTrigger).data(dataKey)._childTriggers;
                 var index = $.inArray(this, _parentChildTriggers);
                 _parentChildTriggers.splice(index, 1);
             }
@@ -340,11 +312,11 @@
             $panel.off(".panel");
             restoreAttr($panel, "style", data._originalPanelStyle);
             restoreAttr($panel, "class", data._originalPanelClass);
-            $panel.removeData(pluginKey);
+            $panel.removeData(dataKey);
             $trigger.off(".panel");
             restoreAttr($trigger, "style", data._originalTriggerStyle);
             restoreAttr($trigger, "class", data._originalTriggerClass);
-            $trigger.removeData(pluginKey);
+            $trigger.removeData(dataKey);
         }
     }
 
@@ -353,10 +325,9 @@
             // this jQuery object
             return this.each(function () {
                 // this DOM element
-                var dataSet = parseDataSet($(this).data());
-                var settings = $.extend(true, {}, $.fn.panel.defaults, dataSet, options);
                 var $trigger = $(this);
-                if (!$trigger.data(pluginKey)) {
+                var settings = $.extend(true, {}, $.fn.panel.defaults, parseDataSet($trigger.data()), options);
+                if (!$trigger.data(dataKey)) {
                     if (!settings.position.of) {
                         settings.position.of = this;
                     } else if (typeof settings.position.of === "function") {
@@ -377,7 +348,7 @@
                     if (settings.parentTrigger) {
                         var $parentTrigger = getjQueryElement(settings.parentTrigger);
                         settings._parentTrigger = $parentTrigger[0];
-                        var parentTriggerData = $parentTrigger.data(pluginKey);
+                        var parentTriggerData = $parentTrigger.data(dataKey);
                         settings._parentPanel = parentTriggerData.panel;
                         if (!parentTriggerData._childTriggers) {
                             parentTriggerData._childTriggers = [];
@@ -426,8 +397,8 @@
                             }
                         }
                     });
-                    $trigger.data(pluginKey, settings);
-                    $panel.data(pluginKey, {
+                    $trigger.data(dataKey, settings);
+                    $panel.data(dataKey, {
                         trigger: this
                     });
                 }
@@ -528,8 +499,8 @@
             return {
                 positioning: function (panel) {
                     var $panel = getjQueryElement(panel);
-                    var $trigger = $($panel.data(pluginKey).trigger);
-                    var data = $trigger.data(pluginKey);
+                    var $trigger = $($panel.data(dataKey).trigger);
+                    var data = $trigger.data(dataKey);
                     if (!data.centered) {
                         positioning($panel, data.position, data.offset);
                     }
@@ -537,7 +508,7 @@
                 getOpenedByTag: function (tag) {
                     for (var i = 0; i < openedTriggers.length; i++) {
                         var $trigger = $(openedTriggers[i]);
-                        var data = $trigger.data(pluginKey);
+                        var data = $trigger.data(dataKey);
                         if (data.tag === tag) {
                             return {
                                 trigger: $trigger[0],
@@ -548,12 +519,12 @@
                 },
                 getTrigger: function (panel) {
                     var $panel = getjQueryElement(panel);
-                    var $trigger = $($panel.data(pluginKey).trigger);
+                    var $trigger = $($panel.data(dataKey).trigger);
                     return $trigger[0];
                 },
                 getPanel: function (trigger) {
                     var $trigger = getjQueryElement(trigger);
-                    var $panel = $($trigger.data(pluginKey).panel);
+                    var $panel = $($trigger.data(dataKey).panel);
                     return $panel[0];
                 },
                 getParentPanel: function (el) {

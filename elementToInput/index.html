@@ -1,0 +1,243 @@
+﻿<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>jQuery Plugins</title>
+    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../style/main.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <h1>jQuery ElementToInput</h1>
+    <h4><a href="../index.html">Home</a></h4>
+    <input type="button" value="Create" id="btnCreate" />
+    <input type="button" value="Destroy" id="btnDestroy" />
+    <table id="table1">
+        <tr>
+            <td data-nombre="Sergio" data-edad--mia="41"></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <h3>Properties</h3>
+    <div id="app">
+        <table>
+            <tr>
+                <td>
+                    min
+                </td>
+                <td>
+                    <input type="text" v-model="options.min">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    max
+                </td>
+                <td>
+                    <input type="text" v-model="options.max">
+                </td>
+            </tr>
+            <tr>
+                <td>type</td>
+                <td>
+                    <select v-model="options.type">
+                        <option>int</option>
+                        <option>decimal</option>
+                        <option>percentage</option>
+                        <option>string</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    displayedDecimals
+                </td>
+                <td>
+                    <input type="text" v-model="options.displayedDecimals">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    savedDecimals
+                </td>
+                <td>
+                    <input type="text" v-model="options.savedDecimals">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    required
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.required">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    inputClass
+                    <div class="hint">class to be appended to dynamic input</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.inputClass">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    inputStyle
+                    <div class="hint">style to be appended to dynamic input</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.inputStyle">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    closestSelector
+                </td>
+                <td>
+                    <input type="text" v-model="options.closestSelector">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    readonly
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.readonly">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    siblings
+                </td>
+                <td>
+                    <input type="text" v-model="options.siblings">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    editFormatted
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.editFormatted">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <h3>Options</h3>
+    <pre id="options"></pre>
+    <h3>Events</h3>
+    <pre>        
+    events: {
+        onChanged: function ($el, data) {
+            /*data = {
+                previousValue: string,
+                previousDataValue: string,
+                previousText: string,
+                previousValidValue: string,
+                previousValidDataValue: string,
+                previousValidText: string,
+                value: any,
+                dataValue: string,
+                text: string,
+                hasValue: boolean,
+                hasChangedValue: boolean,
+                isValid: boolean,
+                originalValue: any,
+                hasChangedOriginalValue: boolean,
+                dirty: boolean
+            };*/
+
+            //return false for don't move to next cell
+        }
+    }    
+    </pre>
+    <h3>Methods</h3>
+    <table>
+        <tr>
+            <td>Set element</td>
+            <td>
+                <pre>$.elementToInput.setElement($el, text, dataValue);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Set dirty</td>
+            <td>
+                <pre>$.elementToInput.setDirty($el, dirty);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Get numeric values</td>
+            <td>
+                <pre>$.elementToInput.getNumericValues($el);</pre>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Dependencies</h3>
+    <ul>
+        <li><a href="https://code.jquery.com/jquery-2.1.3.min.js">https://code.jquery.com/jquery-2.1.3.min.js</a></li>
+        <li><a href="../lib/jquery.caret.js">jquery.caret.js</a></li>
+        <li><a href="../lib/globalize.js">globalize.js</a></li>
+        <li><a href="../lib/globalize.culture.es-ES.js">globalize.culture.es-ES.js</a></li>
+        <li><a href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js">https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js</a></li>
+        <li><a href="../lib/dataset.js">dataset.js</a></li>
+    </ul>
+    <script src="../index.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../lib/jquery.caret.js"></script>
+    <script src="../lib/globalize.js"></script>
+    <script src="../lib/globalize.culture.es-ES.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script>
+        Globalize.culture('es-ES');
+    </script>
+    <script src="../lib/dataset.js"></script>
+    <script src="jquery.elementToInput.js"></script>
+    <script src="https://unpkg.com/vue@2.2.6"></script>
+    <script>
+        var options = $.extend(true, {}, $.fn.elementToInput.defaults);
+        delete options.events;
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                options: options
+            }
+        });
+
+        function getOptions() {
+            return JSON.parse(JSON.stringify(app.options));
+        }
+
+        function dumpOptions() {
+            var options = $.extend(true, {}, app.options);
+            keepOnlyChangesInObject(options, $.fn.elementToInput.defaults);
+            removeEmptyObjects(options);
+            $("#options").html(JSON.stringify(options, null, "\t"));
+        }
+
+        $("#btnCreate").on("click", function (e) {
+            var options = getOptions();            
+            $("td", "#table1").elementToInput(options);
+            dumpOptions();
+        });
+
+        $("#btnDestroy").on("click", function (e) {
+            $("td", "#table1").elementToInput("destroy");
+        });
+    </script>
+</body>
+
+</html>
