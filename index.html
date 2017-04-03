@@ -494,7 +494,11 @@ console.log(o.panel);
                 var options = getOptions();
                 $trigger1.panel(options);
                 var $trigger2 = $("#btnTrigger2");
-                $trigger2.panel();
+                $trigger2.panel({
+                    calculateContentHeight: {
+                        selector: ".tab-content"
+                    }
+                });
                 $trigger2.panel("open");
                 dumpOptions();
             });            

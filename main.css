@@ -4,8 +4,8 @@
 
 #panel1 {
     background-color: red;
-    height: 400px;
-    width: 400px; 
+    height: 75%;
+    width: 75%; 
     overflow: auto;   
 }
 
@@ -24,7 +24,7 @@
 
 #panel2 {
     background-color: yellow;
-    height: 150px;
+    height: 250px;
     width: 500px;
 }
 

@@ -200,17 +200,33 @@
             return;
         }
         var $panel = $(data.panel);
-        var height = $panel.height();
-        var $el = $panel.find(data.calculateContentHeight.selector).first();
+        var $el = $panel.find(data.calculateContentHeight.selector);
         if ($el.length === 0) {
             return;
         }
-        $el.siblings().each(function (index, element) {
-            height -= $(this).outerHeight(true);
-        });
+        var height = $panel.height() - getHeight($panel, $el);
         $el.css({
             overflow: "auto"
         }).height(height);
+    }
+
+    function getHeight($container, $contained) {
+        var children = $container.children().toArray();
+        var contained = $contained[0];
+        var height = 0;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            var $child = $(child);
+            if (child === contained) {
+                continue;
+            }
+            if ($.contains(child, contained)) {
+                height += getHeight($child, $contained);
+            } else {
+                height += $child.outerHeight(true);
+            }
+        }
+        return height;
     }
 
     function positioning($panel, position, offset) {
@@ -511,7 +527,7 @@
         centered: false,
         calculateContentHeight: {
             active: true,
-            selector: ".tab-content, [data-role='content']"
+            selector: "[data-role='content']"
         }
     };
 
