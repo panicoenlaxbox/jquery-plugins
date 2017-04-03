@@ -199,17 +199,14 @@
                         <a href="https://api.jqueryui.com/position/">position</a>
                     </div>
                     <div class="hint">
-                        "my" Defines which position on the element being positioned to align with the target element: "horizontal
-                        vertical" alignment
+                        "my" Defines which position on the element being positioned to align with the target element: "horizontal vertical" alignment
                     </div>
                     <div class="hint">
-                        "at" Defines which position on the target element to align the positioned element against: "horizontal
-                        vertical" alignment
+                        "at" Defines which position on the target element to align the positioned element against: "horizontal vertical" alignment
                     </div>
                     <div class="hint">"of" Which element to position against</div>
                     <div class="hint">
-                        "collision" When the positioned element overflows the window in some direction, move it to an alternative
-                        position
+                        "collision" When the positioned element overflows the window in some direction, move it to an alternative position
                     </div>
                 </td>
             </tr>
@@ -286,7 +283,9 @@
                 </td>
             </tr>
             <tr>
-                <td>sticky</td>
+                <td>sticky
+                    <div class="hint">if sticky, panel will be fixed, if not will be absolute</div>
+                </td>
                 <td>
                     <input type="checkbox" v-model="options.sticky">
                 </td>
@@ -501,7 +500,7 @@ console.log(o.panel);
                 });
                 $trigger2.panel("open");
                 dumpOptions();
-            });            
+            });
 
             $("#btnDestroy").on("click", function (e) {
                 var $trigger = $("#btnTrigger1");

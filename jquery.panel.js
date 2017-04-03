@@ -36,10 +36,6 @@
         return data;
     }
 
-    function getRandomTag() {
-        return Math.random().toString(36).substr(2, 5);
-    }
-
     function log(message, tag) {
         if (tag) {
             message = tag + ": " + message;
@@ -346,7 +342,6 @@
             restoreAttr($panel, "class", data._originalPanelClass);
             $panel.removeData(pluginKey);
             $trigger.off(".panel");
-            $trigger.removeAttr("data-random-tag");
             restoreAttr($trigger, "style", data._originalTriggerStyle);
             restoreAttr($trigger, "class", data._originalTriggerClass);
             $trigger.removeData(pluginKey);
@@ -393,10 +388,6 @@
                     settings._originalTriggerStyle = $trigger.attr("style");
                     settings._originalPanelClass = $panel.attr("class");
                     settings._originalPanelStyle = $panel.attr("style");
-                    if (!settings.tag) {
-                        settings.tag = getRandomTag();
-                        $trigger.attr("data-random-tag", settings.tag);
-                    }
                     $trigger.addClass("tab-panel-trigger");
                     $trigger.on("click.panel", function (e) {
                         log("trigger click.panel", settings.tag);
