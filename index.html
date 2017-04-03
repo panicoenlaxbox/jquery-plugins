@@ -12,6 +12,7 @@
 <body>
     <h1>jQuery Panel</h1>
     <input type="button" value="Open" id="btnTrigger1" data-panel="#panel1" />
+    <input type="button" value="Open child" id="btnOpenChild" />
     <input type="button" value="Destroy" id="btnDestroy" />
     <div id="panel1" style="display: none;">
         <div data-role="header">
@@ -486,6 +487,16 @@ console.log(o.panel);
                 $trigger.panel("open");
                 dumpOptions();
             });
+
+            $("#btnOpenChild").on("click", function (e) {
+                var $trigger1 = $("#btnTrigger1");
+                var options = getOptions();
+                $trigger1.panel(options);
+                var $trigger2 = $("#btnTrigger2");
+                $trigger2.panel();
+                $trigger2.panel("open");
+                dumpOptions();
+            });            
 
             $("#btnDestroy").on("click", function (e) {
                 var $trigger = $("#btnTrigger1");
