@@ -440,6 +440,7 @@ console.log(o.panel);
             keepOnlyChangesInObject(options, $.fn.panel.defaults);
             removeEmptyObjects(options);
             $("#options").html(JSON.stringify(options, null, "\t"));
+            console.log(options);
         }
 
         function keepOnlyChangesInObject(obj1, obj2) {
