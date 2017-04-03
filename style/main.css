@@ -1,0 +1,12 @@
+.hint {
+  font-style: italic;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table td {
+  border: 1px solid black;
+  padding: 5px;
+}

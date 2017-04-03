@@ -1,0 +1,515 @@
+﻿<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>jQuery Plugins</title>
+    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet" />
+    <link rel="stylesheet" href="../style/main.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+    <h1>jQuery Panel</h1>
+    <h4><a href="../index.html">Home</h4>
+    <input type="button" value="Open" id="btnTrigger1" data-panel="#panel1" />
+    <input type="button" value="Open child" id="btnOpenChild" />
+    <input type="button" value="Destroy" id="btnDestroy" />
+    <div id="panel1" style="display: none;">
+        <div data-role="header">
+            <input type="button" data-role="close" value="Close" />
+        </div>
+        <div data-role="content">
+            <input type="button" value="Open" id="btnTrigger2" data-panel="#panel2" data-parent-trigger="#btnTrigger1" />
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+            <h1>Sergio</h1>
+        </div>
+        <div data-role="footer"></div>
+    </div>
+    <div id="panel2" style="display: none;">
+        <div>Cabecera</div>
+        <div data-role="content">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#home" data-toggle="tab">Home</a></li>
+                <li><a href="#profile" data-toggle="tab">Profile</a></li>
+                <li><a href="#messages" data-toggle="tab">Messages</a></li>
+                <li><a href="#settings" data-toggle="tab">Settings</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="home">
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                    <h1>panicoenlaxbox</h1>
+                </div>
+                <div class="tab-pane" id="profile">profile</div>
+                <div class="tab-pane" id="messages">messages</div>
+                <div class="tab-pane" id="settings">settings</div>
+            </div>
+        </div>
+        <div>Footer</div>
+    </div>
+    <h3>Properties</h3>
+    <div id="app">
+        <table>
+            <tr>
+                <td>
+                    destroyOnClose
+                    <div class="hint">By default false, true for this playground</div>
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.destroyOnClose" disabled="disabled">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    animation.active
+                    <div class="hint">slide</div>
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.animation.active">
+                </td>
+            </tr>
+            <tr>
+                <td>animation.direction</td>
+                <td>
+                    <select v-model="options.animation.direction">
+                        <option>left</option>
+                        <option>right</option>
+                        <option>up</option>
+                        <option>down</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    animation.duration
+                    <div class="hint">200-fast, 400, 600-slow</div>
+                </td>
+                <td>
+                    <select v-model="options.animation.duration">
+                        <option value="fast">200</option>
+                        <option value="400">400</option>
+                        <option value="slow">600</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ajax.appendContentToSelector
+                    <div class="hint">jQuery selector</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.ajax.appendContentToSelector">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    ajax.loadIfSelectorNotExist
+                    <div class="hint">jQuery selector</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.ajax.loadIfSelectorNotExist">
+                </td>
+            </tr>
+            <tr>
+                <td>ajax.loading</td>
+                <td>
+                    <input type="checkbox" v-model="options.ajax.loading">
+                </td>
+            </tr>
+            <tr>
+                <td>ajax.removeContentBeforeLoad</td>
+                <td>
+                    <input type="checkbox" v-model="options.ajax.removeContentBeforeLoad">
+                </td>
+            </tr>
+            <tr>
+                <td>ajax.url</td>
+                <td>
+                    <input type="text" v-model="options.ajax.url">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    closePanelSelector
+                    <div class="hint">jQuery selector</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.closePanelSelector">
+                </td>
+            </tr>
+            <tr>
+                <td>fillWindowHeight</td>
+                <td>
+                    <input type="checkbox" v-model="options.fillWindowHeight">
+                </td>
+            </tr>
+            <tr>
+                <td>overlay.modal</td>
+                <td>
+                    <input type="checkbox" v-model="options.overlay.modal">
+                </td>
+            </tr>
+            <tr>
+                <td>overlay.style.backgroundColor</td>
+                <td>
+                    <input type="text" v-model="options.overlay.style.backgroundColor">
+                </td>
+            </tr>
+            <tr>
+                <td>overlay.style.opacity</td>
+                <td>
+                    <input type="text" v-model="options.overlay.style.opacity">
+                </td>
+            </tr>
+            <tr>
+                <td>overlay.removeOpacityIfNotFirst</td>
+                <td>
+                    <input type="checkbox" v-model="options.overlay.removeOpacityIfNotFirst">
+                </td>
+            </tr>
+            <tr>
+                <td>offset.left</td>
+                <td>
+                    <input type="text" v-model="options.offset.left">
+                </td>
+            </tr>
+            <tr>
+                <td>offset.top</td>
+                <td>
+                    <input type="text" v-model="options.offset.top">
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+
+                    <div class="hint">
+                        <a href="https://api.jqueryui.com/position/">position</a>
+                    </div>
+                    <div class="hint">
+                        "my" Defines which position on the element being positioned to align with the target element: "horizontal vertical" alignment
+                    </div>
+                    <div class="hint">
+                        "at" Defines which position on the target element to align the positioned element against: "horizontal vertical" alignment
+                    </div>
+                    <div class="hint">"of" Which element to position against</div>
+                    <div class="hint">
+                        "collision" When the positioned element overflows the window in some direction, move it to an alternative position
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    position.my
+                </td>
+                <td>
+                    <select v-model="options.position.my">
+                        <option value="left top">left top</option>
+                        <option value="left center">left center</option>
+                        <option value="left bottom">left bottom</option>
+                        <option value="center top">center top</option>
+                        <option value="center center">center center</option>
+                        <option value="center bottom">center bottom</option>
+                        <option value="right top">right top</option>
+                        <option value="right center">right center</option>
+                        <option value="right bottom">right bottom</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>position.at</td>
+                <td>
+                    <select v-model="options.position.at">
+                        <option value="left top">left top</option>
+                        <option value="left center">left center</option>
+                        <option value="left bottom">left bottom</option>
+                        <option value="center top">center top</option>
+                        <option value="center center">center center</option>
+                        <option value="center bottom">center bottom</option>
+                        <option value="right top">right top</option>
+                        <option value="right center">right center</option>
+                        <option value="right bottom">right bottom</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    position.of
+                    <div class="hint">jQuery selector|DOM Element|jQuery element|function(trigger)</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.position.of">
+                </td>
+            </tr>
+            <tr>
+                <td>position.collision</td>
+                <td>
+                    <select v-model="options.position.collision">
+                        <option value="flip flilp">flip flilp</option>
+                        <option value="flip fit">flip fit</option>
+                        <option value="flip flipfit">flip flipfit</option>
+                        <option value="flip none">flip none</option>
+                        <option value="fit flilp">fit flilp</option>
+                        <option value="fit fit">fit fit</option>
+                        <option value="fit flipfit">fit flipfit</option>
+                        <option value="fit none">fit none</option>
+                        <option value="flipfit flilp">flipfit flilp</option>
+                        <option value="flipfit fit">flipfit fit</option>
+                        <option value="flipfit flipfit">flipfit flipfit</option>
+                        <option value="flipfit none">flipfit none</option>
+                        <option value="none flilp">none flilp</option>
+                        <option value="none fit">none fit</option>
+                        <option value="none flipfit">none flipfit</option>
+                        <option value="none none">none none</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>removeBodyOverflow</td>
+                <td>
+                    <input type="checkbox" v-model="options.removeBodyOverflow">
+                </td>
+            </tr>
+            <tr>
+                <td>sticky
+                    <div class="hint">if sticky, panel will be fixed, if not will be absolute</div>
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.sticky">
+                </td>
+            </tr>
+            <tr>
+                <td>tag</td>
+                <td>
+                    <input type="text" v-model="options.tag">
+                </td>
+            </tr>
+            <tr>
+                <td>zIndex</td>
+                <td>
+                    <input type="text" v-model="options.zIndex">
+                </td>
+            </tr>
+            <tr>
+                <td>calculateContentHeight.active</td>
+                <td>
+                    <input type="checkbox" v-model="options.calculateContentHeight.active">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    calculateContentHeight.selector
+                    <div class="hint">jQuery selector</div>
+                </td>
+                <td>
+                    <input type="text" v-model="options.calculateContentHeight.selector">
+                </td>
+            </tr>
+            <tr>
+                <td>centered</td>
+                <td>
+                    <input type="checkbox" v-model="options.centered">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <h3>Options</h3>
+    <pre id="options"></pre>
+    <h3>Events</h3>
+    <pre>        
+    events: {
+        onAjaxDone: function (trigger, panel, el, data, textStatus, jqXHR) {},
+        onAjaxFail: function (trigger, panel, jqXHR, textStatus, errorThrown) {},
+        onBeforeClose: function (trigger, panel) {
+            //return false for cancelling
+        },
+        onBeforeOpen: function (trigger, panel) {
+            //return false for cancelling
+        },
+        onClose: function (trigger, panel) {},
+        onOpen: function (trigger, panel) {}
+    },        
+    </pre>
+    <h3>Methods</h3>
+    <table>
+        <tr>
+            <td>Create panel</td>
+            <td>
+                <pre>$trigger.panel($panel[, options]);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Open panel</td>
+            <td>
+                <pre>$trigger.panel("open");</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Close panel</td>
+            <td>
+                <pre>$trigger.panel("close");</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Destroy panel</td>
+            <td>
+                <pre>$trigger.panel("destroy");</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Positioning a panel</td>
+            <td>
+                <pre>$.panel.positioning(panel);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Get trigger and panel with the selected tag</td>
+            <td>
+                <pre>
+var o = $.panel.getOpenedByTag(tag);
+console.log(o.trigger);
+console.log(o.panel);
+                </pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Get trigger associated with panel</td>
+            <td>
+                <pre>$.panel.getTrigger(panel);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Get panel associated with trigger</td>
+            <td>
+                <pre>$.panel.getPanel(trigger);</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>Get panel that is parent of el</td>
+            <td>
+                <pre>$.panel.getParentPanel(el);</pre>
+            </td>
+        </tr>
+    </table>
+    <h3>Dependencies</h3>
+    <ul>
+        <li><a href="https://code.jquery.com/jquery-2.1.3.min.js">https://code.jquery.com/jquery-2.1.3.min.js</a></li>
+        <li><a href="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js">https://code.jquery.com/ui/1.11.2/jquery-ui.min.js</a></li>
+        <li><a href="jquery.blockUI.js">jquery.blockUI.js</a></li>
+    </ul>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../lib/jquery.blockUI.js"></script>
+    <script src="jquery.panel.js"></script>
+    <script src="https://unpkg.com/vue@2.2.6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script>
+        var options = $.extend(true, {}, $.fn.panel.defaults);
+        delete options.panel;
+        delete options.parentTrigger;
+        delete options.events;
+        options.destroyOnClose = true;
+
+        var app = new Vue({
+            el: '#app',
+            data: {
+                options: options
+            }
+        });
+
+        function getOptions() {
+            return JSON.parse(JSON.stringify(app.options));
+        }
+
+        function dumpOptions() {
+            var options = $.extend(true, {}, app.options);
+            keepOnlyChangesInObject(options, $.fn.panel.defaults);
+            removeEmptyObjects(options);
+            $("#options").html(JSON.stringify(options, null, "\t"));
+            console.log(options);
+        }
+
+        function keepOnlyChangesInObject(obj1, obj2) {
+            for (var key in obj1) {
+                if (!obj1.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (!(key in obj2) || typeof (obj1[key]) === "function") {
+                    delete obj1[key];
+                    continue;
+                }
+                if (typeof (obj1[key]) === "object" && obj1[key] !== null) {
+                    keepOnlyChangesInObject(obj1[key], obj2[key]);
+
+                } else if (obj1[key] === obj2[key]) {
+                    delete obj1[key];
+                }
+            }
+        }
+
+        function removeEmptyObjects(obj) {
+            for (var key in obj) {
+                if (!obj.hasOwnProperty(key)) {
+                    continue;
+                }
+                if (typeof (obj[key]) === "object") {
+                    removeEmptyObjects(obj[key]);
+                    if (Object.keys(obj[key]).length === 0) {
+                        delete obj[key];
+                    }
+                }
+            }
+        }
+
+        $(function () {
+            $("#btnTrigger1").on("click", function (e) {
+                var $trigger = $(this);
+                var options = getOptions();
+                options.events = {
+                    onOpen: function (trigger, panel) {
+                        $("#btnTrigger2").panel();
+                    }
+                };
+                $trigger.panel(options);
+                $trigger.panel("open");
+                dumpOptions();
+            });
+
+            $("#btnOpenChild").on("click", function (e) {
+                var $trigger1 = $("#btnTrigger1");
+                var options = getOptions();
+                $trigger1.panel(options);
+                var $trigger2 = $("#btnTrigger2");
+                $trigger2.panel({
+                    calculateContentHeight: {
+                        selector: ".tab-content"
+                    }
+                });
+                $trigger2.panel("open");
+                dumpOptions();
+            });
+
+            $("#btnDestroy").on("click", function (e) {
+                var $trigger = $("#btnTrigger1");
+                $trigger.panel("destroy");
+            });
+        });
+    </script>
+</body>
+
+</html>
