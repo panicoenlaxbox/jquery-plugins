@@ -18,10 +18,16 @@
         //console.log(message);
     }
 
-    function getNextElement($el, $els, next) {
+    function getNextElement($el, $els, next, cyclicTabulation) {
         var index = $els.index($el);
-        index = next ? index + 1 : index - 1;
-        return $els[index];
+        if (cyclicTabulation && index === 0 && !next) {
+            return $els[$els.length - 1];
+        } else if (cyclicTabulation && (index === $els.length - 1) && next) {
+            return $els[0];
+        } else {
+            index = next ? index + 1 : index - 1;
+            return $els[index];
+        }
     }
 
     function getDataValueFromAttr($el) {
@@ -159,7 +165,7 @@
         $input.val(value);
         $input.data("originalValue", value);
         $input.addClass("element_to_input");
-        if(excelStyle) {
+        if (excelStyle) {
             $input.css({
                 "border-width": 0,
                 "border-radius": 0,
@@ -382,7 +388,7 @@
             } else if (!(siblings instanceof jQuery)) {
                 siblings = $(siblings);
             }
-            var nextElement = getNextElement($el, siblings, next);
+            var nextElement = getNextElement($el, siblings, next, settings.cyclicTabulation);
             if (nextElement) {
                 $(nextElement).click();
             }
@@ -497,7 +503,8 @@
             onChanged: null
         },
         tag: null,
-        excelStyle: true
+        excelStyle: true,
+        cyclicTabulation: true
     };
 
     $.extend({

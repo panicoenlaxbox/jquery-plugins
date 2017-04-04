@@ -121,6 +121,9 @@
             <tr>
                 <td>
                     siblings
+                    <div class="hint">Siblings of the current element, useful for moving the focus to the next or previous element</div>
+                    <div class="hint">Current element shoud be included</div>
+                    <div class="hint">A jQuery selector or a matched set or an array of DOM elements</div>
                 </td>
                 <td>
                     <input type="text" v-model="options.siblings">
@@ -135,6 +138,14 @@
                     <input type="checkbox" v-model="options.editFormatted">
                 </td>
             </tr>
+            <tr>
+                <td>
+                    cyclicTabulation
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.cyclicTabulation">
+                </td>
+            </tr>            
         </table>
     </div>
     <h3>Options</h3>
@@ -234,13 +245,15 @@
         $("#btnCreate").on("click", function (e) {
             var options = getOptions();
             dumpOptions();
+            var $cells = $("td", "#table1");
+            options.siblings = $cells;
             options.events = {
                 onChanged: function ($el, data) {
                     console.log($el);
                     console.log(data);
                 }
             };
-            $("td", "#table1").elementToInput(options);
+            $cells.elementToInput(options);
 
         });
 
