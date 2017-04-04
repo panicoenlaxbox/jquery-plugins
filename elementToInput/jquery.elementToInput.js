@@ -391,6 +391,7 @@
             } else if (currentNumberOfThousandSeparator > newNumberOfThousandSeparator) {
                 caretPosition--;
             }
+            console.log("mover");
             $input.caret(caretPosition);
         }
     }
