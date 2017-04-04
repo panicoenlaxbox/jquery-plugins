@@ -77,6 +77,7 @@
             <tr>
                 <td>
                     required
+                    <div class="hint">If true, when plugin starts and has not data-value, will be marked as invalid</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.required">
@@ -103,6 +104,7 @@
             <tr>
                 <td>
                     closestSelector
+                    <div class="hint">Which parent element of the dynamic created element will receive editing and invalid class when needed</div>
                 </td>
                 <td>
                     <input type="text" v-model="options.closestSelector">
@@ -127,6 +129,7 @@
             <tr>
                 <td>
                     editFormatted
+                    <div class="hint">Input text is fully formatted, with thousand separator</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.editFormatted">
@@ -229,9 +232,16 @@
         }
 
         $("#btnCreate").on("click", function (e) {
-            var options = getOptions();            
-            $("td", "#table1").elementToInput(options);
+            var options = getOptions();
             dumpOptions();
+            options.events = {
+                onChanged: function ($el, data) {
+                    console.log($el);
+                    console.log(data);
+                }
+            };
+            $("td", "#table1").elementToInput(options);
+
         });
 
         $("#btnDestroy").on("click", function (e) {

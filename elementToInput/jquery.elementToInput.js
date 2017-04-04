@@ -97,9 +97,9 @@
         } else {
             $el.removeClass("editing");
         }
-        var editingClosestSelector = getData($el).closestSelector;
-        if (editingClosestSelector) {
-            var $parent = $el.closest(editingClosestSelector);
+        var closestSelector = getData($el).closestSelector;
+        if (closestSelector) {
+            var $parent = $el.closest(closestSelector);
             if (active) {
                 $parent.addClass("editing");
             } else {
@@ -114,9 +114,9 @@
         } else {
             $el.removeClass("invalid");
         }
-        var invalidClosestSelector = getData($el).closestSelector;
-        if (invalidClosestSelector) {
-            var $parent = $el.closest(invalidClosestSelector);
+        var closestSelector = getData($el).closestSelector;
+        if (closestSelector) {
+            var $parent = $el.closest(closestSelector);
             if (active) {
                 $parent.addClass("invalid");
             } else {
@@ -154,11 +154,23 @@
         return value;
     }
 
-    function createInput(value, inputStyle, inputClass) {
+    function createInput(value, inputStyle, inputClass, excelStyle) {
         var $input = $("<input type=\"text\" />");
         $input.val(value);
         $input.data("originalValue", value);
         $input.addClass("element_to_input");
+        if(excelStyle) {
+            $input.css({
+                "border-width": 0,
+                "border-radius": 0,
+                "box-shadow": "none",
+                "transition-property": "none",
+                "padding": 0,
+                "margin-bottom": 0,
+                "height": "100%",
+                "width": "100%"
+            });
+        }
         if (inputStyle) {
             $input.attr("style", inputStyle);
         }
@@ -201,7 +213,7 @@
             setValue($el, "previousValidText", previousText);
             setValue($el, "previousValidDataValue", previousDataValue);
         }
-        var $input = createInput(text, settings.inputStyle, settings.inputClass);
+        var $input = createInput(text, settings.inputStyle, settings.inputClass, settings.excelStyle);
         $input.on(getEventType("click"), function (e) {
             editing($(this).parent(), true);
             e.stopPropagation();
@@ -484,7 +496,8 @@
         events: {
             onChanged: null
         },
-        tag: null
+        tag: null,
+        excelStyle: true
     };
 
     $.extend({

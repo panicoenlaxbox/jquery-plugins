@@ -3,16 +3,6 @@
     height: 50px;
 }
 
-table td .element_to_input {
-    border-width: 0;
-    border-radius: 0;
-    box-shadow: none;
-    transition-property: none;
-    margin-bottom: 0;
-    height: 100%;
-    width: 100%; 
-}
-
 table td.editing .element_to_input {
     background-color: yellow;
 }
