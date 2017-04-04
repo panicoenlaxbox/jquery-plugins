@@ -292,12 +292,12 @@
                     text = formatValue(value, "decimal", data.savedDecimals, !data.editFormatted);
                 } else if (data.editFormatted) {
                     value = parseText(text, data.type);
-                    text = formatValue(value, data.type, data.savedDecimals, false);
+                    text = formatValue(value, data.type === "currency" ? "decimal" : data.type, data.savedDecimals, false);
                 }
             }
             setValue($el, "previousValidText", previousText);
             setValue($el, "previousValidDataValue", previousDataValue);
-        }        
+        }
         var $input = createInput($el, text);
         $input.on(event("click"), function (e) {
             editing($(this).parent(), true);
@@ -307,7 +307,7 @@
         $input.on(event("keydown"), keydown);
         $input.on(event("keyup"), keyup);
         $el.empty();
-        $el.append($input);        
+        $el.append($input);
         $input.select();
         editing($el, true);
     }
@@ -385,13 +385,13 @@
         var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
         if (newValue !== currentValue) {
+            console.log(newValue, currentValue);
             $input.val(newValue);
             if (currentNumberOfThousandSeparator < newNumberOfThousandSeparator) {
                 caretPosition++;
             } else if (currentNumberOfThousandSeparator > newNumberOfThousandSeparator) {
                 caretPosition--;
             }
-            console.log("mover");
             $input.caret(caretPosition);
         }
     }
