@@ -62,6 +62,7 @@
                         <option>int</option>
                         <option>decimal</option>
                         <option>percentage</option>
+                        <option>currency</option>
                         <option>string</option>
                     </select>
                 </td>
@@ -257,8 +258,6 @@
             options.siblings = $cells;
             options.events = {
                 onChanged: function ($el, data) {
-                    console.log($el);
-                    console.log(data);
                 }
             };
             $cells.elementToInput(options);

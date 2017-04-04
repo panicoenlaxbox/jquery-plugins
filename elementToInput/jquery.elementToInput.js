@@ -18,16 +18,23 @@
         //console.log(message);
     }
 
+    function getjQueryElement(el) {
+        if (el instanceof jQuery) {
+            return el;
+        }
+        return $(el);
+    }
+
     function getNextElement($el, next) {
-        var settings = getSettings($el);
-        if (!settings.siblings) {
+        var data = getData($el);
+        if (!data.siblings) {
             return null;
         }
-        var $siblings = settings.siblings;
+        var $siblings = data.siblings;
         var index = $siblings.index($el);
-        if (settings.cyclicTabulation && index === 0 && !next) {
+        if (data.cyclicTabulation && index === 0 && !next) {
             return $siblings[$siblings.length - 1];
-        } else if (settings.cyclicTabulation && (index === $siblings.length - 1) && next) {
+        } else if (data.cyclicTabulation && (index === $siblings.length - 1) && next) {
             return $siblings[0];
         } else {
             index = next ? index + 1 : index - 1;
@@ -35,10 +42,10 @@
         }
     }
 
-    function getSettingsValueFromAttr($el) {
+    function getDataValue($el) {
         var value = $el.attr("data-value");
         if (value === undefined) { // does not exist the data attribute            
-            if (getSettings($el).type === "string") {
+            if (getData($el).type === "string") {
                 value = $.trim($el.text());
             } else {
                 value = ""; // value if data attribute is empty
@@ -48,49 +55,24 @@
     }
 
     function isNumericType(type) {
-        return type === "int" || type === "decimal" || type === "percentage";
+        return isIntegerType(type) || isDecimalType(type);
+    }
+
+    function isIntegerType(type) {
+        return type === "int";
+    }
+
+    function isDecimalType(type) {
+        return ["decimal", "percentage", "currency"].indexOf(type) !== -1;
     }
 
     function removeThousandSeparator(text) {
-        var reg = new RegExp("\\" + thousandSeparator, "g");
-        return text.replace(reg, "");
+        var regex = new RegExp("\\" + thousandSeparator, "g");
+        return text.replace(regex, "");
     }
 
-    function getEventType(type) {
+    function event(type) {
         return type + "." + pluginName;
-    }
-
-    function validate(text, $el) {
-        var settings = getSettings($el);
-        var type = settings.type,
-            required = settings.required,
-            min = settings.min,
-            max = settings.max,
-            allowNegative = settings.allowNegative;
-        text = $.trim(text);
-        if (text === "" && required) {
-            return false;
-        }
-        if (text && isNumericType(type)) {
-            var value = parseText(text, type);
-            if (isNaN(value)) {
-                return false;
-            }
-            if (!allowNegative && value < 0) {
-                return false;
-            }
-            if (typeof min === "number") {
-                if (value < min) {
-                    return false;
-                }
-            }
-            if (typeof max === "number") {
-                if (value > max) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     function parseText(text, type) {
@@ -98,7 +80,7 @@
             return text;
         }
         var value;
-        if (type === "decimal" || type === "percentage") {
+        if (isDecimalType(type)) {
             value = Globalize.parseFloat(text);
         } else if (type === "int") {
             value = Globalize.parseInt(text);
@@ -106,41 +88,7 @@
         return value;
     }
 
-    function editing($el, active) {
-        if (active) {
-            $el.addClass("editing");
-        } else {
-            $el.removeClass("editing");
-        }
-        var closestSelector = getSettings($el).closestSelector;
-        if (closestSelector) {
-            var $parent = $el.closest(closestSelector);
-            if (active) {
-                $parent.addClass("editing");
-            } else {
-                $parent.removeClass("editing");
-            }
-        }
-    }
-
-    function invalid($el, active, allowInvalid) {
-        if (active) {
-            $el.addClass("invalid");
-        } else {
-            $el.removeClass("invalid");
-        }
-        var closestSelector = getSettings($el).closestSelector;
-        if (closestSelector) {
-            var $parent = $el.closest(closestSelector);
-            if (active) {
-                $parent.addClass("invalid");
-            } else {
-                $parent.removeClass("invalid");
-            }
-        }
-    }
-
-    function fixFormattedNumber(value) {
+    function trailingZero(value) {
         while (value.substr(value.length - 1, 1) === "0") {
             value = value.substring(0, value.length - 1);
         }
@@ -154,27 +102,35 @@
         if (!isNumericType(type)) {
             return value;
         }
-        if (type === "decimal" || type === "percentage") {
-            value = Globalize.format(value, "n" + decimals);
-            value = fixFormattedNumber(value);
-            if (type === "percentage") {
-                value += " %";
-            }
-        } else if (type === "int") {
-            value = Globalize.format(value, "n0");
+        var format;
+        switch (type) {
+            case "int":
+                format: "n0"
+            case "decimal":
+                format = "n" + decimals;
+                break;
+            case "percentage":
+                format = "p" + decimals;
+                break;
+            case "currency":
+                format = "c" + decimals;
+                break;
         }
+        value = Globalize.format(value, format);
+        value = trailingZero(value);
         if (removeThousand) {
             value = removeThousandSeparator(value);
         }
         return value;
     }
 
-    function createInput(value, inputStyle, inputClass, excelStyle) {
+    function createInput($el, value) {
         var $input = $("<input type=\"text\" />");
         $input.val(value);
         $input.data("originalValue", value);
         $input.addClass("element_to_input");
-        if (excelStyle) {
+        var data = getData($el);
+        if (data.excelStyle) {
             $input.css({
                 "border-width": 0,
                 "border-radius": 0,
@@ -186,63 +142,42 @@
                 "width": "100%"
             });
         }
-        if (inputStyle) {
-            $input.attr("style", inputStyle);
+        if (data.inputStyle) {
+            $input.attr("style", data.inputStyle);
         }
-        if (inputClass) {
-            $input.addClass(inputClass);
+        if (data.inputClass) {
+            $input.addClass(data.inputClass);
         }
         return $input;
     }
 
-    function initialize($el) {
-        var text = getSettingsValueFromAttr($el);
-        if (!validate(text, $el)) {
-            invalid($el, true, getSettings($el).allowInvalid);
+    function setValue($el, key, value, synchronizeAttr) {
+        getData($el)[key] = value;
+        if (synchronizeAttr === true) {
+            $el.attr("data-" + key, value);
         }
-        $el.on(getEventType("click"), click);
     }
 
-    function click() {
-        var $el = $(this);
-        var settings = getSettings($el);
-        setValue($el, "moveToNextElement", true);
-        var previousText = $.trim($el.text());
-        setValue($el, "previousText", previousText);
-        var previousDataValue = getSettingsValueFromAttr($el);
-        setValue($el, "previousDataValue", previousDataValue);
-        var text = previousDataValue;
-        var isValid = !$el.hasClass("invalid");
-        if (isValid) {
-            if (text !== "" && isNumericType(settings.type)) {
-                var value;
-                if (settings.type === "percentage") {
-                    value = parseText(text, "decimal");
-                    value *= 100;
-                    text = formatValue(value, "decimal", settings.savedDecimals, !settings.editFormatted);
-                } else if (settings.editFormatted) {
-                    value = parseText(text, settings.type);
-                    text = formatValue(value, settings.type, settings.savedDecimals, false);
-                }
-            }
-            setValue($el, "previousValidText", previousText);
-            setValue($el, "previousValidDataValue", previousDataValue);
-        }
-        var $input = createInput(text, settings.inputStyle, settings.inputClass, settings.excelStyle);
-        $input.on(getEventType("click"), function (e) {
-            editing($(this).parent(), true);
-            e.stopPropagation();
-        });
-        $input.on(getEventType("blur"), blur);
-        $input.on(getEventType("keydown"), keydown);
-        $input.on(getEventType("keyup"), keyup);
-        $el.empty();
-        $el.append($input);
-        $input.select();
-        editing($el, true);
+    function getValue($el, key) {
+        return getData($el)[key];
     }
 
-    function getNumericValues(text, options) {
+    function removeValue($el, key) {
+        delete getData($el)[key];
+    }
+
+    function getData($el) {
+        return $el.data(pluginName);
+    }
+
+    function getNumberOfThousandSeparator(value) {
+        var pattern = "\\" + thousandSeparator;
+        var regex = new RegExp(pattern, "g");
+        return (value.match(regex) || []).length;
+    }
+
+    function getNumericValues($input, options) {
+        var text = $.trim($input.val());
         if (text === "") {
             return {
                 parsedValue: null,
@@ -250,22 +185,18 @@
                 formattedText: ""
             }
         }
-        var type = options.type;
-        var displayedDecimals = options.displayedDecimals;
-        var savedDecimals = options.savedDecimals;
-        var parsedValue = parseText(text, type);
+        var parsedValue = parseText(text, options.type);
         var formattedValue;
-        if (type === "percentage") {
-            var percentage = parseText(text, "decimal");
-            percentage /= 100;
-            formattedValue = formatValue(percentage, "decimal", savedDecimals, true);
+        var value;
+        if (options.type === "percentage") {
+            parsedValue /= 100;
+            formattedValue = formatValue(parsedValue, "decimal", options.savedDecimals + 2, true);
+            value = parseFloat(parsedValue.toFixed(options.displayedDecimals + 2));
         } else {
-            formattedValue = formatValue(parsedValue, type, savedDecimals, true);
+            formattedValue = formatValue(parsedValue, isDecimalType(options.type) ? "decimal" : "int", options.savedDecimals, true);
+            value = isDecimalType(options.type) ? parseFloat(parsedValue.toFixed(options.displayedDecimals)) : parsedValue;
         }
-        var value = type === "decimal" || type === "percentage" ?
-            parseFloat(parsedValue.toFixed(displayedDecimals)) :
-            parsedValue;
-        var formattedText = formatValue(value, type, displayedDecimals, false);
+        var formattedText = formatValue(value, options.type, options.displayedDecimals, false);
         return {
             parsedValue: parsedValue,
             formattedValue: formattedValue,
@@ -273,87 +204,112 @@
         }
     }
 
-    function blur() {
-        var $input = $(this);
-        var $el = $input.parent();
-        var settings = getSettings($el);
-        var cancel = settings.readonly || getValue($el, "esc") === true;
-        if (cancel) {
-            editing($el, false);
-            invalid($el, $el.hasClass("invalid"), settings.allowInvalid);
-            $input.remove();
-            $el.text(getValue($el, "previousText"));
-            removeValue($el, "esc");
-            return;
+    function validate($el, text) {
+        var data = getData($el);
+        text = $.trim(text);
+        if (text === "" && data.required) {
+            return false;
         }
-        var text = $.trim($input.val());
-        var dataValue = text;
-        var value;
-        var isValid = validate(text, $el);
-        if (isValid && isNumericType(settings.type)) {
-            var values = getNumericValues(text, {
-                type: settings.type,
-                displayedDecimals: settings.displayedDecimals,
-                savedDecimals: settings.savedDecimals
-            });
-            text = values.formattedText;
-            dataValue = values.formattedValue;
-            value = values.parsedValue;
+        if (text && isNumericType(data.type)) {
+            var value = parseText(text, data.type);
+            if (isNaN(value)) {
+                return false;
+            }
+            if (!data.allowNegative && value < 0) {
+                return false;
+            }
+            if (typeof data.min === "number") {
+                if (value < data.min) {
+                    return false;
+                }
+            }
+            if (typeof data.max === "number") {
+                if (value > data.max) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function editing($el, active) {
+        if (active) {
+            $el.addClass("editing");
         } else {
-            value = null;
+            $el.removeClass("editing");
         }
-        editing($el, false);
-        invalid($el, !isValid, settings.allowInvalid);
-        $input.remove();
-        $el.text(text);
-        setValue($el, "value", dataValue, true);
-        var originalValue = $el.attr("data-original-value");
-        var dirty = originalValue !== dataValue;
-        originalValue = originalValue ? parseText(originalValue, settings.type) : null;
-        setValue($el, "dirty", dirty, true);
-        var previousText = getValue($el, "previousText");
-        var previousDataValue = getValue($el, "previousDataValue");
-        var previousValidText = getValue($el, "previousValidText");
-        var previousValidDataValue = getValue($el, "previousValidDataValue");
-        var data = {
-            previousValue: validate(previousText, $el) && previousText !== "" ?
-                parseText(previousDataValue, settings.type) : null,
-            previousDataValue: previousDataValue,
-            previousText: previousText,
-            previousValidValue: previousValidText ? parseText(previousValidDataValue, settings.type) : null,
-            previousValidDataValue: previousValidDataValue,
-            previousValidText: previousValidText,
-            value: value,
-            dataValue: dataValue,
-            text: text,
-            hasValue: !!dataValue,
-            hasChangedValue: previousDataValue !== dataValue,
-            isValid: isValid,
-            originalValue: originalValue,
-            hasChangedOriginalValue: originalValue !== value,
-            dirty: dirty
-        };
-        var onChangedReturnValue = true;
-        if (data.hasChangedValue) {
-            onChangedReturnValue = (settings.events.onChanged || $.noop)($el, data);
-        }
-        setValue($el, "moveToNextElement", onChangedReturnValue === false ? false : true);
-        removeValue($el, "esc");
-    }
-
-    function setValue($el, key, value, synchronizeAttr) {
-        getSettings($el)[key] = value;
-        if (synchronizeAttr === true) {
-            $el.attr("data-" + key, value);
+        var selector = getData($el).closestSelector;
+        if (selector) {
+            var $parent = $el.closest(selector);
+            if (active) {
+                $parent.addClass("editing");
+            } else {
+                $parent.removeClass("editing");
+            }
         }
     }
 
-    function getValue($el, key) {
-        return getSettings($el)[key];
+    function invalid($el, active) {
+        if (active) {
+            $el.addClass("invalid");
+        } else {
+            $el.removeClass("invalid");
+        }
+        var selector = getData($el).closestSelector;
+        if (selector) {
+            var $parent = $el.closest(selector);
+            if (active) {
+                $parent.addClass("invalid");
+            } else {
+                $parent.removeClass("invalid");
+            }
+        }
     }
 
-    function removeValue($el, key) {
-        delete getSettings($el)[key];
+    function initialize($el) {
+        if (!validate($el, getDataValue($el))) {
+            invalid($el, true);
+        }
+        $el.on(event("click"), click);
+    }
+
+    function click() {
+        var $el = $(this);
+        var data = getData($el);
+        setValue($el, "moveToNextElement", true);
+        var previousText = $.trim($el.text());
+        setValue($el, "previousText", previousText);
+        var previousDataValue = getDataValue($el);
+        setValue($el, "previousDataValue", previousDataValue);
+        var text = previousDataValue;
+        var isValid = !$el.hasClass("invalid");
+        if (isValid) {
+            if (text !== "" && isNumericType(data.type)) {
+                var value;
+                if (data.type === "percentage") {
+                    value = parseText(text, "decimal") * 100;
+                    // achieve a text that user can edit without percent sign
+                    text = formatValue(value, "decimal", data.savedDecimals, !data.editFormatted);
+                } else if (data.editFormatted) {
+                    value = parseText(text, data.type);
+                    text = formatValue(value, data.type, data.savedDecimals, false);
+                }
+            }
+            setValue($el, "previousValidText", previousText);
+            setValue($el, "previousValidDataValue", previousDataValue);
+        }        
+        var $input = createInput($el, text);
+        $input.on(event("click"), function (e) {
+            editing($(this).parent(), true);
+            e.stopPropagation();
+        });
+        $input.on(event("blur"), blur);
+        $input.on(event("keydown"), keydown);
+        $input.on(event("keyup"), keyup);
+        $el.empty();
+        $el.append($input);        
+        $input.select();
+        editing($el, true);
     }
 
     function keydown(e) {
@@ -369,8 +325,8 @@
         var isArrow = isUpArrow || isRightArrow || isDownArrow || isLeftArrow;
         var $input = $(this);
         var $el = $input.parent();
-        var settings = getSettings($el);
-        if (settings.readonly && !(isEsc || isTab || isEnter || isArrow)) {
+        var data = getData($el);
+        if (data.readonly && !(isEsc || isTab || isEnter || isArrow)) {
             e.preventDefault();
             return;
         }
@@ -396,7 +352,7 @@
                 $(nextElement).click();
             }
         }
-        if (isNumericType(settings.type)) {
+        if (isNumericType(data.type)) {
             var isNumpadComma = e.keyCode === 110;
             if (isNumpadComma) {
                 e.preventDefault();
@@ -405,18 +361,14 @@
         }
     }
 
-    function getSettings($el) {
-        return $el.data(pluginName);
-    }
-
     function keyup() {
         var $input = $(this);
-        var settings = $input.parent().data(pluginName);
+        var data = getData($input.parent());
         var currentValue = $input.val();
         if (
-            settings.readonly ||
-            !settings.editFormatted ||
-            !isNumericType(settings.type) ||
+            data.readonly ||
+            !data.editFormatted ||
+            !isNumericType(data.type) ||
             $.trim(currentValue) === "") {
             return;
         }
@@ -424,13 +376,13 @@
         if (lastCharacter === decimalSeparator || lastCharacter === "0") {
             return;
         }
-        var parsedValue = parseText(currentValue, settings.type);
+        var parsedValue = parseText(currentValue, data.type);
         if (isNaN(parsedValue)) {
             return;
         }
         var caretPosition = $input.caret();
         var currentNumberOfThousandSeparator = getNumberOfThousandSeparator(currentValue);
-        var newValue = formatValue(parsedValue, settings.type === "percentage" ? "decimal" : settings.type, settings.savedDecimals, false);
+        var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
         if (newValue !== currentValue) {
             $input.val(newValue);
@@ -443,10 +395,73 @@
         }
     }
 
-    function getNumberOfThousandSeparator(value) {
-        var pattern = "\\" + thousandSeparator;
-        var regex = new RegExp(pattern, "g");
-        return (value.match(regex) || []).length;
+    function blur() {
+        var $input = $(this);
+        var $el = $input.parent();
+        var data = getData($el);
+        var cancel = data.readonly || getValue($el, "esc") === true;
+        if (cancel) {
+            editing($el, false);
+            invalid($el, $el.hasClass("invalid"));
+            $input.remove();
+            $el.text(getValue($el, "previousText"));
+            removeValue($el, "esc");
+            return;
+        }
+        var text = $.trim($input.val());
+        var dataValue = text;
+        var value;
+        var isValid = validate($el, text);
+        if (isValid && isNumericType(data.type)) {
+            var values = getNumericValues($input, {
+                type: data.type,
+                displayedDecimals: data.displayedDecimals,
+                savedDecimals: data.savedDecimals
+            });
+            text = values.formattedText;
+            dataValue = values.formattedValue;
+            value = values.parsedValue;
+        } else {
+            value = null;
+        }
+        editing($el, false);
+        invalid($el, !isValid);
+        $input.remove();
+        $el.text(text);
+        setValue($el, "value", dataValue, true);
+        var originalValue = $el.attr("data-original-value");
+        var dirty = originalValue !== dataValue;
+        originalValue = originalValue ? parseText(originalValue, data.type) : null;
+        setValue($el, "dirty", dirty, true);
+        var previousText = getValue($el, "previousText");
+        var previousDataValue = getValue($el, "previousDataValue");
+        var previousValidText = getValue($el, "previousValidText");
+        var previousValidDataValue = getValue($el, "previousValidDataValue");
+        var eventData = {
+            previousValue: validate($el, previousText) && previousText !== "" ?
+                parseText(previousDataValue, data.type) : null,
+            previousDataValue: previousDataValue,
+            previousText: previousText,
+            previousValidValue: previousValidText ? parseText(previousValidDataValue, data.type) : null,
+            previousValidDataValue: previousValidDataValue,
+            previousValidText: previousValidText,
+            value: value,
+            dataValue: dataValue,
+            text: text,
+            hasValue: !!dataValue,
+            hasChangedValue: previousDataValue !== dataValue,
+            isValid: isValid,
+            originalValue: originalValue,
+            hasChangedOriginalValue: originalValue !== value,
+            dirty: dirty
+        };
+        log(eventData, data.tag);
+        var onChangedReturnValue = true;
+        if (eventData.hasChangedValue) {
+            onChangedReturnValue = (data.events.onChanged || $.noop)($el, eventData);
+        }
+        setValue($el, "moveToNextElement", onChangedReturnValue === false ? false : true);
+        removeValue($el, "esc");
     }
 
     var methods = {
@@ -455,13 +470,12 @@
                 var $this = $(this);
                 if (!$this.data(pluginName)) {
                     var dataSet = parseDataSet($this.data());
-                    var settings = $.extend(true, {}, $.fn[pluginName].defaults, dataSet, options);
-                    settings._originalDataSet = JSON.stringify(dataSet);
-                    settings.dirty = false;
-                    if (settings.siblings && !(settings.siblings instanceof jQuery)) {
-                        settings.siblings = $(settings.siblings);
+                    var data = $.extend(true, {}, $.fn[pluginName].defaults, dataSet, options);
+                    data._originalDataSet = JSON.stringify(dataSet);
+                    if (data.siblings && !(data.siblings instanceof jQuery)) {
+                        data.siblings = $(data.siblings);
                     }
-                    $this.data(pluginName, settings);
+                    $this.data(pluginName, data);
                     initialize($this);
                 }
             });
@@ -469,7 +483,7 @@
         destroy: function () {
             return this.each(function () {
                 var $this = $(this);
-                var data = $this.data(pluginName);
+                var data = getData($this);
                 if (data) {
                     $this.empty();
                     $this.removeClass("editing");
@@ -495,7 +509,7 @@
     $.fn[pluginName].defaults = {
         min: null,
         max: null,
-        type: "int", //int, decimal, percentage, string
+        type: "int", //int, decimal, percentage, currency, string
         allowNegative: true,
         displayedDecimals: 2,
         savedDecimals: 2,
@@ -511,47 +525,39 @@
         },
         tag: null,
         excelStyle: true,
-        cyclicTabulation: true,
-        allowInvalid: true
+        cyclicTabulation: true
     };
 
     $.extend({
         elementToInput: (function () {
             return {
                 setElement: function ($el, text, dataValue) {
-                    if (!($el instanceof jQuery)) {
-                        $el = $($el);
-                    }
+                    $el = getjQueryElement($el);
                     setValue($el, "value", dataValue, true);
                     var dirty = $el.text() !== text;
                     $el.text(text);
-                    if (!validate(text, $el)) {
-                        invalid($el, true, getSettings($el).allowInvalid);
+                    if (!validate($el, text)) {
+                        invalid($el, true);
                     }
                     $.elementToInput.setDirty($el, dirty);
                 },
                 setDirty: function ($el, dirty) {
-                    if (!($el instanceof jQuery)) {
-                        $el = $($el);
-                    }
+                    $el = getjQueryElement($el);
                     setValue($el, "dirty", dirty, true);
                 },
-                getNumericValues: function ($el) {
-                    if (!($el instanceof jQuery)) {
-                        $el = $($el);
-                    }
-                    var isValid = !$el.hasClass("invalid");
-                    var data = getSettings($el);
-                    var type = data.type;
-                    if (!isValid || !isNumericType(type)) {
+                getNumericValues: function ($input) {
+                    $input = getjQueryElement($input);
+                    var $parent = $input.parent();
+                    var isValid = !$parent.hasClass("invalid");
+                    var data = getData($parent);
+                    if (!isValid || !isNumericType(data.type)) {
                         return null;
                     }
-                    var values = getNumericValues($el.text(), {
+                    return getNumericValues($input, {
                         type: data.type,
                         displayedDecimals: data.displayedDecimals,
                         savedDecimals: data.savedDecimals
                     });
-                    return values;
                 }
             }
         })()
