@@ -36,7 +36,7 @@
                     min
                 </td>
                 <td>
-                    <input type="text" v-model="options.min">
+                    <input type="text" v-model.number="options.min">
                 </td>
             </tr>
             <tr>
@@ -44,9 +44,17 @@
                     max
                 </td>
                 <td>
-                    <input type="text" v-model="options.max">
+                    <input type="text" v-model.number="options.max">
                 </td>
             </tr>
+            <tr>
+                <td>
+                    allowNegative
+                </td>
+                <td>
+                    <input type="checkbox" v-model.number="options.allowNegative">
+                </td>
+            </tr>            
             <tr>
                 <td>type</td>
                 <td>
@@ -63,7 +71,7 @@
                     displayedDecimals
                 </td>
                 <td>
-                    <input type="text" v-model="options.displayedDecimals">
+                    <input type="text" v-model.number="options.displayedDecimals">
                 </td>
             </tr>
             <tr>
@@ -71,7 +79,7 @@
                     savedDecimals
                 </td>
                 <td>
-                    <input type="text" v-model="options.savedDecimals">
+                    <input type="text" v-model.number="options.savedDecimals">
                 </td>
             </tr>
             <tr>
@@ -104,7 +112,7 @@
             <tr>
                 <td>
                     closestSelector
-                    <div class="hint">Which parent element of the dynamic created element will receive editing and invalid class when needed</div>
+                    <div class="hint">Which parent element of the dynamic created input will receive editing and invalid class when needed</div>
                 </td>
                 <td>
                     <input type="text" v-model="options.closestSelector">
@@ -264,3 +272,9 @@
 </body>
 
 </html>
+
+<!--
+    currency sería igual que decimal pero formateando a moneda
+    formato personalizado
+    fusionar elementToInput con number
+-->

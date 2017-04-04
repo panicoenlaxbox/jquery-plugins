@@ -18,22 +18,27 @@
         //console.log(message);
     }
 
-    function getNextElement($el, $els, next, cyclicTabulation) {
-        var index = $els.index($el);
-        if (cyclicTabulation && index === 0 && !next) {
-            return $els[$els.length - 1];
-        } else if (cyclicTabulation && (index === $els.length - 1) && next) {
-            return $els[0];
+    function getNextElement($el, next) {
+        var settings = getSettings($el);
+        if (!settings.siblings) {
+            return null;
+        }
+        var $siblings = settings.siblings;
+        var index = $siblings.index($el);
+        if (settings.cyclicTabulation && index === 0 && !next) {
+            return $siblings[$siblings.length - 1];
+        } else if (settings.cyclicTabulation && (index === $siblings.length - 1) && next) {
+            return $siblings[0];
         } else {
             index = next ? index + 1 : index - 1;
-            return $els[index];
+            return $siblings[index];
         }
     }
 
-    function getDataValueFromAttr($el) {
+    function getSettingsValueFromAttr($el) {
         var value = $el.attr("data-value");
         if (value === undefined) { // does not exist the data attribute            
-            if (getData($el).type === "string") {
+            if (getSettings($el).type === "string") {
                 value = $.trim($el.text());
             } else {
                 value = ""; // value if data attribute is empty
@@ -56,11 +61,12 @@
     }
 
     function validate(text, $el) {
-        var settings = getData($el);
+        var settings = getSettings($el);
         var type = settings.type,
             required = settings.required,
             min = settings.min,
-            max = settings.max;
+            max = settings.max,
+            allowNegative = settings.allowNegative;
         text = $.trim(text);
         if (text === "" && required) {
             return false;
@@ -68,6 +74,9 @@
         if (text && isNumericType(type)) {
             var value = parseText(text, type);
             if (isNaN(value)) {
+                return false;
+            }
+            if (!allowNegative && value < 0) {
                 return false;
             }
             if (typeof min === "number") {
@@ -103,7 +112,7 @@
         } else {
             $el.removeClass("editing");
         }
-        var closestSelector = getData($el).closestSelector;
+        var closestSelector = getSettings($el).closestSelector;
         if (closestSelector) {
             var $parent = $el.closest(closestSelector);
             if (active) {
@@ -114,13 +123,13 @@
         }
     }
 
-    function invalid($el, active) {
+    function invalid($el, active, allowInvalid) {
         if (active) {
             $el.addClass("invalid");
         } else {
             $el.removeClass("invalid");
         }
-        var closestSelector = getData($el).closestSelector;
+        var closestSelector = getSettings($el).closestSelector;
         if (closestSelector) {
             var $parent = $el.closest(closestSelector);
             if (active) {
@@ -187,20 +196,20 @@
     }
 
     function initialize($el) {
-        var text = getDataValueFromAttr($el);
+        var text = getSettingsValueFromAttr($el);
         if (!validate(text, $el)) {
-            invalid($el, true);
+            invalid($el, true, getSettings($el).allowInvalid);
         }
         $el.on(getEventType("click"), click);
     }
 
     function click() {
         var $el = $(this);
-        var settings = getData($el);
+        var settings = getSettings($el);
         setValue($el, "moveToNextElement", true);
         var previousText = $.trim($el.text());
         setValue($el, "previousText", previousText);
-        var previousDataValue = getDataValueFromAttr($el);
+        var previousDataValue = getSettingsValueFromAttr($el);
         setValue($el, "previousDataValue", previousDataValue);
         var text = previousDataValue;
         var isValid = !$el.hasClass("invalid");
@@ -267,11 +276,11 @@
     function blur() {
         var $input = $(this);
         var $el = $input.parent();
-        var settings = getData($el);
+        var settings = getSettings($el);
         var cancel = settings.readonly || getValue($el, "esc") === true;
         if (cancel) {
             editing($el, false);
-            invalid($el, $el.hasClass("invalid"));
+            invalid($el, $el.hasClass("invalid"), settings.allowInvalid);
             $input.remove();
             $el.text(getValue($el, "previousText"));
             removeValue($el, "esc");
@@ -294,7 +303,7 @@
             value = null;
         }
         editing($el, false);
-        invalid($el, !isValid);
+        invalid($el, !isValid, settings.allowInvalid);
         $input.remove();
         $el.text(text);
         setValue($el, "value", dataValue, true);
@@ -333,18 +342,18 @@
     }
 
     function setValue($el, key, value, synchronizeAttr) {
-        getData($el)[key] = value;
+        getSettings($el)[key] = value;
         if (synchronizeAttr === true) {
             $el.attr("data-" + key, value);
         }
     }
 
     function getValue($el, key) {
-        return getData($el)[key];
+        return getSettings($el)[key];
     }
 
     function removeValue($el, key) {
-        delete getData($el)[key];
+        delete getSettings($el)[key];
     }
 
     function keydown(e) {
@@ -360,7 +369,7 @@
         var isArrow = isUpArrow || isRightArrow || isDownArrow || isLeftArrow;
         var $input = $(this);
         var $el = $input.parent();
-        var settings = getData($el);
+        var settings = getSettings($el);
         if (settings.readonly && !(isEsc || isTab || isEnter || isArrow)) {
             e.preventDefault();
             return;
@@ -382,13 +391,7 @@
             if ((isTab && isShift) || isUpArrow) {
                 next = false;
             }
-            var siblings = settings.siblings;
-            if (!siblings) {
-                return;
-            } else if (!(siblings instanceof jQuery)) {
-                siblings = $(siblings);
-            }
-            var nextElement = getNextElement($el, siblings, next, settings.cyclicTabulation);
+            var nextElement = getNextElement($el, next);
             if (nextElement) {
                 $(nextElement).click();
             }
@@ -402,7 +405,7 @@
         }
     }
 
-    function getData($el) {
+    function getSettings($el) {
         return $el.data(pluginName);
     }
 
@@ -455,6 +458,9 @@
                     var settings = $.extend(true, {}, $.fn[pluginName].defaults, dataSet, options);
                     settings._originalDataSet = JSON.stringify(dataSet);
                     settings.dirty = false;
+                    if (settings.siblings && !(settings.siblings instanceof jQuery)) {
+                        settings.siblings = $(settings.siblings);
+                    }
                     $this.data(pluginName, settings);
                     initialize($this);
                 }
@@ -490,6 +496,7 @@
         min: null,
         max: null,
         type: "int", //int, decimal, percentage, string
+        allowNegative: true,
         displayedDecimals: 2,
         savedDecimals: 2,
         required: false,
@@ -504,7 +511,8 @@
         },
         tag: null,
         excelStyle: true,
-        cyclicTabulation: true
+        cyclicTabulation: true,
+        allowInvalid: true
     };
 
     $.extend({
@@ -518,7 +526,7 @@
                     var dirty = $el.text() !== text;
                     $el.text(text);
                     if (!validate(text, $el)) {
-                        invalid($el, true);
+                        invalid($el, true, getSettings($el).allowInvalid);
                     }
                     $.elementToInput.setDirty($el, dirty);
                 },
@@ -533,7 +541,7 @@
                         $el = $($el);
                     }
                     var isValid = !$el.hasClass("invalid");
-                    var data = getData($el);
+                    var data = getSettings($el);
                     var type = data.type;
                     if (!isValid || !isNumericType(type)) {
                         return null;

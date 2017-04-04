@@ -173,7 +173,7 @@
                 <tr>
                     <td>overlay.style.opacity</td>
                     <td>
-                        <input type="text" v-model="options.overlay.style.opacity">
+                        <input type="text" v-model.number="options.overlay.style.opacity">
                     </td>
                 </tr>
                 <tr>
@@ -185,18 +185,17 @@
                 <tr>
                     <td>offset.left</td>
                     <td>
-                        <input type="text" v-model="options.offset.left">
+                        <input type="text" v-model.number="options.offset.left">
                     </td>
                 </tr>
                 <tr>
                     <td>offset.top</td>
                     <td>
-                        <input type="text" v-model="options.offset.top">
+                        <input type="text" v-model.number="options.offset.top">
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
-
                         <div class="hint">
                             <a href="https://api.jqueryui.com/position/">position</a>
                         </div>
@@ -301,7 +300,7 @@
                 <tr>
                     <td>zIndex</td>
                     <td>
-                        <input type="text" v-model="options.zIndex">
+                        <input type="text" v-model.number="options.zIndex">
                     </td>
                 </tr>
                 <tr>
