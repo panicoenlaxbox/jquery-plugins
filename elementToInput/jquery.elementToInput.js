@@ -384,7 +384,6 @@
         var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
         if (newValue !== currentValue) {
-            console.log(newValue, currentValue);
             $input.val(newValue);
             if (currentNumberOfThousandSeparator < newNumberOfThousandSeparator) {
                 caretPosition++;
