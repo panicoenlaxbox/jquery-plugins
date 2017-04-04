@@ -176,8 +176,7 @@
         return (value.match(regex) || []).length;
     }
 
-    function getNumericValues($input, options) {
-        var text = $.trim($input.val());
+    function getNumericValues(text, options) {
         if (text === "") {
             return {
                 parsedValue: null,
@@ -414,7 +413,7 @@
         var value;
         var isValid = validate($el, text);
         if (isValid && isNumericType(data.type)) {
-            var values = getNumericValues($input, {
+            var values = getNumericValues(text, {
                 type: data.type,
                 displayedDecimals: data.displayedDecimals,
                 savedDecimals: data.savedDecimals
@@ -546,15 +545,17 @@
                     $el = getjQueryElement($el);
                     setValue($el, "dirty", dirty, true);
                 },
-                getNumericValues: function ($input) {
-                    $input = getjQueryElement($input);
-                    var $parent = $input.parent();
-                    var isValid = !$parent.hasClass("invalid");
-                    var data = getData($parent);
+                getNumericValues: function ($el) {
+                    $el = getjQueryElement($el);
+                    if ($el[0].tagName.toUpperCase() === "INPUT") {
+                        $el = $input.parent();
+                    }
+                    var isValid = !$el.hasClass("invalid");
+                    var data = getData($el);
                     if (!isValid || !isNumericType(data.type)) {
                         return null;
                     }
-                    return getNumericValues($input, {
+                    return getNumericValues($.trim($el.text()), {
                         type: data.type,
                         displayedDecimals: data.displayedDecimals,
                         savedDecimals: data.savedDecimals
