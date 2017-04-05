@@ -355,7 +355,7 @@
             var isNumpadComma = e.keyCode === 110;
             if (isNumpadComma) {
                 e.preventDefault();
-                $input.caret(decimalSeparator);
+                setCaretPosition($input[0], decimalSeparator);
             }
         }
     }
@@ -379,7 +379,7 @@
         if (isNaN(parsedValue)) {
             return;
         }
-        var caretPosition = $input.caret();
+        var caretPosition = getCaretPosition($input[0]);
         var currentNumberOfThousandSeparator = getNumberOfThousandSeparator(currentValue);
         var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
@@ -390,8 +390,29 @@
             } else if (currentNumberOfThousandSeparator > newNumberOfThousandSeparator) {
                 caretPosition--;
             }
-            $input.caret(caretPosition);
+            setCaretPosition($input[0], caretPosition);
         }
+    }
+
+    function getCaretPosition(input) {
+        return input.selectionStart;
+    }
+
+    function setSelectionRange(input, selectionStart, selectionEnd) {
+        if (input.setSelectionRange) {
+            input.focus();
+            input.setSelectionRange(selectionStart, selectionEnd);
+        } else if (input.createTextRange) {
+            var range = input.createTextRange();
+            range.collapse(true);
+            range.moveEnd('character', selectionEnd);
+            range.moveStart('character', selectionStart);
+            range.select();
+        }
+    }
+
+    function setCaretPosition(input, position) {
+        setSelectionRange(input, position, position);
     }
 
     function blur() {
