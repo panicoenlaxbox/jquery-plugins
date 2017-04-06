@@ -8,8 +8,8 @@
 
     var pluginName = "elementToInput";
 
-    var decimalSeparator = Globalize.culture().numberFormat["."];
-    var thousandSeparator = Globalize.culture().numberFormat[","];
+    var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
+    var THOUSAND_SEPARATOR = Globalize.culture().numberFormat[","];
 
     function log(message, tag) {
         if (tag) {
@@ -67,7 +67,7 @@
     }
 
     function removeThousandSeparator(text) {
-        var regex = new RegExp("\\" + thousandSeparator, "g");
+        var regex = new RegExp("\\" + THOUSAND_SEPARATOR, "g");
         return text.replace(regex, "");
     }
 
@@ -92,7 +92,7 @@
         while (value.substr(value.length - 1, 1) === "0") {
             value = value.substring(0, value.length - 1);
         }
-        if (value.substr(value.length - 1, 1) === decimalSeparator) {
+        if (value.substr(value.length - 1, 1) === DECIMAL_SEPARATOR) {
             value = value.substring(0, value.length - 1);
         }
         return value;
@@ -171,17 +171,18 @@
     }
 
     function getNumberOfThousandSeparator(value) {
-        var pattern = "\\" + thousandSeparator;
+        var pattern = "\\" + THOUSAND_SEPARATOR;
         var regex = new RegExp(pattern, "g");
         return (value.match(regex) || []).length;
     }
 
     function getNumericValues(text, options) {
+        // text has to be a value that can be parsed with globalize
         if (text === "") {
             return {
-                parsedValue: null,
-                formattedValue: "",
-                formattedText: ""
+                parsedValue: null, // typed value
+                formattedValue: "", // value ready for binding, aware of culture
+                formattedText: "" // formatted value, aware of culture
             }
         }
         var parsedValue = parseText(text, options.type);
@@ -323,8 +324,8 @@
         var isLeftArrow = e.keyCode === 37;
         var isArrow = isUpArrow || isRightArrow || isDownArrow || isLeftArrow;
         var $input = $(this);
-        var $el = $input.parent();
-        var data = getData($el);
+        var $parent = $input.parent();
+        var data = getData($parent);
         if (data.readonly && !(isEsc || isTab || isEnter || isArrow)) {
             e.preventDefault();
             return;
@@ -332,13 +333,13 @@
         if (isEsc || isTab || isEnter || isUpArrow || isDownArrow) {
             e.preventDefault();
             if (isEsc) {
-                setValue($el, "esc", true);
+                setValue($parent, "esc", true);
             }
             $input.blur();
             if (isEsc) {
                 return;
             }
-            var moveToNextElement = getValue($el, "moveToNextElement");
+            var moveToNextElement = getValue($parent, "moveToNextElement");
             if (!moveToNextElement) {
                 return;
             }
@@ -346,7 +347,7 @@
             if ((isTab && isShift) || isUpArrow) {
                 next = false;
             }
-            var nextElement = getNextElement($el, next);
+            var nextElement = getNextElement($parent, next);
             if (nextElement) {
                 $(nextElement).click();
             }
@@ -355,7 +356,7 @@
             var isNumpadComma = e.keyCode === 110;
             if (isNumpadComma) {
                 e.preventDefault();
-                setCaretPosition($input[0], decimalSeparator);
+                insertTextAtCaretPosition($input[0], DECIMAL_SEPARATOR);
             }
         }
     }
@@ -372,14 +373,14 @@
             return;
         }
         var lastCharacter = (currentValue.substring(currentValue.length - 1));
-        if (lastCharacter === decimalSeparator || lastCharacter === "0") {
+        if (lastCharacter === DECIMAL_SEPARATOR || lastCharacter === "0") {
             return;
         }
         var parsedValue = parseText(currentValue, data.type);
         if (isNaN(parsedValue)) {
             return;
         }
-        var caretPosition = getCaretPosition($input[0]);
+        var caretPosition = getStartCaretPosition($input[0]);
         var currentNumberOfThousandSeparator = getNumberOfThousandSeparator(currentValue);
         var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
@@ -394,44 +395,51 @@
         }
     }
 
-    function getCaretPosition(input) {
+    function getStartCaretPosition(input) {        
         return input.selectionStart;
     }
 
-    function setSelectionRange(input, selectionStart, selectionEnd) {
-        if (input.setSelectionRange) {
-            input.focus();
-            input.setSelectionRange(selectionStart, selectionEnd);
-        } else if (input.createTextRange) {
-            var range = input.createTextRange();
-            range.collapse(true);
-            range.moveEnd('character', selectionEnd);
-            range.moveStart('character', selectionStart);
-            range.select();
-        }
-    }
+    function getEndCaretPosition(input) {
+        return input.selectionEnd;
+    }    
 
     function setCaretPosition(input, position) {
-        setSelectionRange(input, position, position);
+        if (typeof position === "string") {
+            position = $(input).val().indexOf(position) + position.length;
+        }
+        input.focus();
+        input.setSelectionRange(position, position);
+    }
+
+    function insertTextAtCaretPosition(input, text) {
+        var start = getStartCaretPosition(input);
+        var end = getEndCaretPosition(input);
+        var $input = $(input);
+        var currentText = $input.val();
+        var newText = currentText.substring(0, start);
+        newText += text;
+        newText += currentText.substring(end, currentText.length);
+        $input.val(newText);
+        setCaretPosition(input, text);
     }
 
     function blur() {
         var $input = $(this);
-        var $el = $input.parent();
-        var data = getData($el);
-        var cancel = data.readonly || getValue($el, "esc") === true;
+        var $parent = $input.parent();
+        var data = getData($parent);
+        var cancel = data.readonly || getValue($parent, "esc") === true;
         if (cancel) {
-            editing($el, false);
-            invalid($el, $el.hasClass("invalid"));
+            editing($parent, false);
+            invalid($parent, $parent.hasClass("invalid"));
             $input.remove();
-            $el.text(getValue($el, "previousText"));
-            removeValue($el, "esc");
+            $parent.text(getValue($parent, "previousText"));
+            removeValue($parent, "esc");
             return;
         }
         var text = $.trim($input.val());
         var dataValue = text;
         var value;
-        var isValid = validate($el, text);
+        var isValid = validate($parent, text);
         if (isValid && isNumericType(data.type)) {
             var values = getNumericValues(text, {
                 type: data.type,
@@ -444,21 +452,21 @@
         } else {
             value = null;
         }
-        editing($el, false);
-        invalid($el, !isValid);
+        editing($parent, false);
+        invalid($parent, !isValid);
         $input.remove();
-        $el.text(text);
-        setValue($el, "value", dataValue, true);
-        var originalValue = $el.attr("data-original-value");
+        $parent.text(text);
+        setValue($parent, "value", dataValue, true);
+        var originalValue = $parent.attr("data-original-value");
         var dirty = originalValue !== dataValue;
         originalValue = originalValue ? parseText(originalValue, data.type) : null;
-        setValue($el, "dirty", dirty, true);
-        var previousText = getValue($el, "previousText");
-        var previousDataValue = getValue($el, "previousDataValue");
-        var previousValidText = getValue($el, "previousValidText");
-        var previousValidDataValue = getValue($el, "previousValidDataValue");
+        setValue($parent, "dirty", dirty, true);
+        var previousText = getValue($parent, "previousText");
+        var previousDataValue = getValue($parent, "previousDataValue");
+        var previousValidText = getValue($parent, "previousValidText");
+        var previousValidDataValue = getValue($parent, "previousValidDataValue");
         var eventData = {
-            previousValue: validate($el, previousText) && previousText !== "" ?
+            previousValue: validate($parent, previousText) && previousText !== "" ?
                 parseText(previousDataValue, data.type) : null,
             previousDataValue: previousDataValue,
             previousText: previousText,
@@ -478,10 +486,10 @@
         log(eventData, data.tag);
         var onChangedReturnValue = true;
         if (eventData.hasChangedValue) {
-            onChangedReturnValue = (data.events.onChanged || $.noop)($el, eventData);
+            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, eventData);
         }
-        setValue($el, "moveToNextElement", onChangedReturnValue === false ? false : true);
-        removeValue($el, "esc");
+        setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
+        removeValue($parent, "esc");
     }
 
     var methods = {
@@ -545,7 +553,8 @@
         },
         tag: null,
         excelStyle: true,
-        cyclicTabulation: true
+        cyclicTabulation: true,
+        format: null
     };
 
     $.extend({
