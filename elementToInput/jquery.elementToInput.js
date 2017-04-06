@@ -42,8 +42,8 @@
         }
     }
 
-    function getDataValue($el) {
-        var value = $el.attr("data-value");
+    function getBindingValue($el) {
+        var value = $el.attr("data-binding-value");
         if (value === undefined) { // does not exist the data attribute            
             if (getData($el).type === "string") {
                 value = $.trim($el.text());
@@ -151,10 +151,10 @@
         return $input;
     }
 
-    function setValue($el, key, value, synchronizeAttr) {
+    function setValue($el, key, value, attrKey) {
         getData($el)[key] = value;
-        if (synchronizeAttr === true) {
-            $el.attr("data-" + key, value);
+        if (attrKey) {
+            $el.attr("data-" + attrKey, value);
         }
     }
 
@@ -176,31 +176,31 @@
         return (value.match(regex) || []).length;
     }
 
-    function getNumericValues(text, options) {
+    function getNumericValues(textToParse, options) {
         // text has to be a value that can be parsed with globalize
-        if (text === "") {
+        if (textToParse === "") {
             return {
-                parsedValue: null, // typed value
-                formattedValue: "", // value ready for binding, aware of culture
-                formattedText: "" // formatted value, aware of culture
+                value: null, // typed value
+                bindingValue: "", // value ready for binding, aware of culture
+                text: "" // formatted value, aware of culture
             }
         }
-        var parsedValue = parseText(text, options.type);
-        var formattedValue;
-        var value;
+        var value = parseText(textToParse, options.type);
+        var bindingValue;
+        var tempValue;
         if (options.type === "percentage") {
-            parsedValue /= 100;
-            formattedValue = formatValue(parsedValue, "decimal", options.savedDecimals + 2, true);
-            value = parseFloat(parsedValue.toFixed(options.displayedDecimals + 2));
+            value /= 100;
+            bindingValue = formatValue(value, "decimal", options.savedDecimals + 2, true);
+            tempValue = parseFloat(value.toFixed(options.displayedDecimals + 2));
         } else {
-            formattedValue = formatValue(parsedValue, isDecimalType(options.type) ? "decimal" : "int", options.savedDecimals, true);
-            value = isDecimalType(options.type) ? parseFloat(parsedValue.toFixed(options.displayedDecimals)) : parsedValue;
+            bindingValue = formatValue(value, isDecimalType(options.type) ? "decimal" : "int", options.savedDecimals, true);
+            tempValue = isDecimalType(options.type) ? parseFloat(value.toFixed(options.displayedDecimals)) : value;
         }
-        var formattedText = formatValue(value, options.type, options.displayedDecimals, false);
+        var text = formatValue(tempValue, options.type, options.displayedDecimals, false);
         return {
-            parsedValue: parsedValue,
-            formattedValue: formattedValue,
-            formattedText: formattedText
+            value: value,
+            bindingValue: bindingValue,
+            text: text
         }
     }
 
@@ -267,22 +267,22 @@
     }
 
     function initialize($el) {
-        if (!validate($el, getDataValue($el))) {
+        if (!validate($el, getBindingValue($el))) {
             invalid($el, true);
         }
         $el.on(event("click"), click);
     }
 
     function click() {
-        var $el = $(this);
-        var data = getData($el);
-        setValue($el, "moveToNextElement", true);
-        var previousText = $.trim($el.text());
-        setValue($el, "previousText", previousText);
-        var previousDataValue = getDataValue($el);
-        setValue($el, "previousDataValue", previousDataValue);
-        var text = previousDataValue;
-        var isValid = !$el.hasClass("invalid");
+        var $parent = $(this);
+        var data = getData($parent);
+        setValue($parent, "moveToNextElement", true);
+        var previousText = $.trim($parent.text());
+        setValue($parent, "previousText", previousText);
+        var previousBindingValue = getBindingValue($parent);
+        setValue($parent, "previousBindingValue", previousBindingValue);
+        var text = previousBindingValue;
+        var isValid = !$parent.hasClass("invalid");
         if (isValid) {
             if (text !== "" && isNumericType(data.type)) {
                 var value;
@@ -295,10 +295,10 @@
                     text = formatValue(value, data.type === "currency" ? "decimal" : data.type, data.savedDecimals, false);
                 }
             }
-            setValue($el, "previousValidText", previousText);
-            setValue($el, "previousValidDataValue", previousDataValue);
+            setValue($parent, "previousValidText", previousText);
+            setValue($parent, "previousValidBindingValue", previousBindingValue);
         }
-        var $input = createInput($el, text);
+        var $input = createInput($parent, text);
         $input.on(event("click"), function (e) {
             editing($(this).parent(), true);
             e.stopPropagation();
@@ -306,10 +306,10 @@
         $input.on(event("blur"), blur);
         $input.on(event("keydown"), keydown);
         $input.on(event("keyup"), keyup);
-        $el.empty();
-        $el.append($input);
+        $parent.empty();
+        $parent.append($input);
         $input.select();
-        editing($el, true);
+        editing($parent, true);
     }
 
     function keydown(e) {
@@ -437,7 +437,7 @@
             return;
         }
         var text = $.trim($input.val());
-        var dataValue = text;
+        var bindingValue = text;
         var value;
         var isValid = validate($parent, text);
         if (isValid && isNumericType(data.type)) {
@@ -446,9 +446,9 @@
                 displayedDecimals: data.displayedDecimals,
                 savedDecimals: data.savedDecimals
             });
-            text = values.formattedText;
-            dataValue = values.formattedValue;
-            value = values.parsedValue;
+            text = values.text;
+            bindingValue = values.bindingValue;
+            value = values.value;
         } else {
             value = null;
         }
@@ -456,31 +456,32 @@
         invalid($parent, !isValid);
         $input.remove();
         $parent.text(text);
-        setValue($parent, "value", dataValue, true);
-        var originalValue = $parent.attr("data-original-value");
-        var dirty = originalValue !== dataValue;
-        originalValue = originalValue ? parseText(originalValue, data.type) : null;
-        setValue($parent, "dirty", dirty, true);
+        setValue($parent, "bindingValue", bindingValue, "binding-value");
+        setValue($parent, "value", value.toString(), "value");
+        var originalBindingValue = $parent.attr("data-original-binding-value");
+        var dirty = originalBindingValue !== bindingValue;
+        originalBindingValue = originalBindingValue ? parseText(originalBindingValue, data.type) : null;
+        setValue($parent, "dirty", dirty, "dirty");
         var previousText = getValue($parent, "previousText");
-        var previousDataValue = getValue($parent, "previousDataValue");
+        var previousBindingValue = getValue($parent, "previousBindingValue");
         var previousValidText = getValue($parent, "previousValidText");
-        var previousValidDataValue = getValue($parent, "previousValidDataValue");
+        var previousValidBindingValue = getValue($parent, "previousValidBindingValue");
         var eventData = {
             previousValue: validate($parent, previousText) && previousText !== "" ?
-                parseText(previousDataValue, data.type) : null,
-            previousDataValue: previousDataValue,
+                parseText(previousBindingValue, data.type) : null,
+            previousBindingValue: previousBindingValue,
             previousText: previousText,
-            previousValidValue: previousValidText ? parseText(previousValidDataValue, data.type) : null,
-            previousValidDataValue: previousValidDataValue,
+            previousValidValue: previousValidText ? parseText(previousValidBindingValue, data.type) : null,
+            previousValidBindingValue: previousValidBindingValue,
             previousValidText: previousValidText,
             value: value,
-            dataValue: dataValue,
+            bindingValue: bindingValue,
             text: text,
-            hasValue: !!dataValue,
-            hasChangedValue: previousDataValue !== dataValue,
+            hasValue: !!bindingValue,
+            hasChangedValue: previousBindingValue !== bindingValue,
             isValid: isValid,
-            originalValue: originalValue,
-            hasChangedOriginalValue: originalValue !== value,
+            originalValue: originalBindingValue,
+            hasChangedOriginalValue: originalBindingValue !== value,
             dirty: dirty
         };
         log(eventData, data.tag);
@@ -553,26 +554,25 @@
         },
         tag: null,
         excelStyle: true,
-        cyclicTabulation: true,
-        format: null
+        cyclicTabulation: true
     };
 
     $.extend({
         elementToInput: (function () {
             return {
-                setElement: function ($el, text, dataValue) {
-                    $el = getjQueryElement($el);
-                    setValue($el, "value", dataValue, true);
-                    var dirty = $el.text() !== text;
-                    $el.text(text);
-                    if (!validate($el, text)) {
-                        invalid($el, true);
+                setElement: function ($parent, text, bindingValue) {
+                    $parent = getjQueryElement($parent);
+                    setValue($parent, "bindingValue", bindingValue, "binding-value");
+                    var dirty = $parent.text() !== text;
+                    $parent.text(text);
+                    if (!validate($parent, text)) {
+                        invalid($parent, true);
                     }
-                    $.elementToInput.setDirty($el, dirty);
+                    $.elementToInput.setDirty($parent, dirty);
                 },
-                setDirty: function ($el, dirty) {
-                    $el = getjQueryElement($el);
-                    setValue($el, "dirty", dirty, true);
+                setDirty: function ($parent, dirty) {
+                    $parent = getjQueryElement($parent);
+                    setValue($parent, "dirty", dirty, "dirty");
                 },
                 getNumericValues: function ($el) {
                     $el = getjQueryElement($el);

@@ -198,19 +198,25 @@
         <tr>
             <td>Set element</td>
             <td>
-                <pre>$.elementToInput.setElement($el, text, dataValue);</pre>
+                <pre>$.elementToInput.setElement($parent, text, dataValue);</pre>
             </td>
         </tr>
         <tr>
             <td>Set dirty</td>
             <td>
-                <pre>$.elementToInput.setDirty($el, dirty);</pre>
+                <pre>$.elementToInput.setDirty($parent, dirty);</pre>
             </td>
         </tr>
         <tr>
             <td>Get numeric values</td>
             <td>
-                <pre>$.elementToInput.getNumericValues($el);</pre>
+                <pre>$.elementToInput.getNumericValues($el, options);
+                    returns {
+                        value: number, // typed value
+                        bindingValue: string, // value ready for binding, aware of culture
+                        text: string // formatted value, aware of culture
+                    }
+                </pre>
             </td>
         </tr>
     </table>
