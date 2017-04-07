@@ -15,7 +15,7 @@
         if (tag) {
             message = tag + ": " + message;
         }
-        //console.log(message);
+        console.log(message);
     }
 
     function getjQueryElement(el) {
@@ -26,7 +26,7 @@
     }
 
     function getNextElement($el, next) {
-        var data = getData($el);
+        var data = $el.data(pluginName);
         if (!data.siblings) {
             return null;
         }
@@ -42,18 +42,6 @@
         }
     }
 
-    function getBindingValue($el) {
-        var value = $el.attr("data-binding-value");
-        if (value === undefined) { // does not exist the data attribute            
-            if (getData($el).type === "string") {
-                value = $.trim($el.text());
-            } else {
-                value = ""; // value if data attribute is empty
-            }
-        }
-        return $.trim(value.toString());
-    }
-
     function isNumericType(type) {
         return isIntegerType(type) || isDecimalType(type);
     }
@@ -66,9 +54,12 @@
         return ["decimal", "percentage", "currency"].indexOf(type) !== -1;
     }
 
-    function removeThousandSeparator(text) {
+    function removeThousandSeparator(value) {
+        if (value === null) {
+            return value;
+        }
         var regex = new RegExp("\\" + THOUSAND_SEPARATOR, "g");
-        return text.replace(regex, "");
+        return value.replace(regex, "");
     }
 
     function event(type) {
@@ -89,6 +80,9 @@
     }
 
     function trailingZero(value) {
+        if (value === null) {
+            return value;
+        }
         while (value.substr(value.length - 1, 1) === "0") {
             value = value.substring(0, value.length - 1);
         }
@@ -127,9 +121,8 @@
     function createInput($el, value) {
         var $input = $("<input type=\"text\" />");
         $input.val(value);
-        $input.data("originalValue", value);
         $input.addClass("element_to_input");
-        var data = getData($el);
+        var data = $el.data(pluginName);
         if (data.excelStyle) {
             $input.css({
                 "border-width": 0,
@@ -151,29 +144,81 @@
         return $input;
     }
 
-    function setValue($el, key, value, attrKey) {
-        getData($el)[key] = value;
-        if (attrKey) {
-            $el.attr("data-" + attrKey, value);
+    function setValue($el, key, value, options) {
+        var data = $el.data(pluginName);
+        options = options || {};
+        if (options.previousKey) {
+            data[options.previousKey] = data[key];
         }
-    }
-
-    function getValue($el, key) {
-        return getData($el)[key];
-    }
-
-    function removeValue($el, key) {
-        delete getData($el)[key];
-    }
-
-    function getData($el) {
-        return $el.data(pluginName);
+        data[key] = value;
+        if (options.attrKey) {
+            $el.attr("data-" + options.attrKey, value);
+        }
     }
 
     function getNumberOfThousandSeparator(value) {
         var pattern = "\\" + THOUSAND_SEPARATOR;
         var regex = new RegExp(pattern, "g");
         return (value.match(regex) || []).length;
+    }
+
+    function validate(text, options) {
+        text = $.trim(text);
+        if (text === "" && options.required) {
+            return false;
+        }
+        if (text && isNumericType(options.type)) {
+            var value = parseText(text, options.type);
+            if (isNaN(value)) {
+                return false;
+            }
+            if (!options.allowNegative && value < 0) {
+                return false;
+            }
+            if (typeof options.min === "number") {
+                if (value < options.min) {
+                    return false;
+                }
+            }
+            if (typeof options.max === "number") {
+                if (value > options.max) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function editing($el, active, selector) {
+        if (active) {
+            $el.addClass("editing");
+        } else {
+            $el.removeClass("editing");
+        }
+        if (selector) {
+            var $parent = $el.closest(selector);
+            if (active) {
+                $parent.addClass("editing");
+            } else {
+                $parent.removeClass("editing");
+            }
+        }
+    }
+
+    function invalid($el, active, selector) {
+        if (active) {
+            $el.addClass("invalid");
+        } else {
+            $el.removeClass("invalid");
+        }
+        if (selector) {
+            var $parent = $el.closest(selector);
+            if (active) {
+                $parent.addClass("invalid");
+            } else {
+                $parent.removeClass("invalid");
+            }
+        }
     }
 
     function getNumericValues(textToParse, options) {
@@ -204,112 +249,31 @@
         }
     }
 
-    function validate($el, text) {
-        var data = getData($el);
-        text = $.trim(text);
-        if (text === "" && data.required) {
-            return false;
-        }
-        if (text && isNumericType(data.type)) {
-            var value = parseText(text, data.type);
-            if (isNaN(value)) {
-                return false;
-            }
-            if (!data.allowNegative && value < 0) {
-                return false;
-            }
-            if (typeof data.min === "number") {
-                if (value < data.min) {
-                    return false;
-                }
-            }
-            if (typeof data.max === "number") {
-                if (value > data.max) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    function editing($el, active) {
-        if (active) {
-            $el.addClass("editing");
-        } else {
-            $el.removeClass("editing");
-        }
-        var selector = getData($el).closestSelector;
-        if (selector) {
-            var $parent = $el.closest(selector);
-            if (active) {
-                $parent.addClass("editing");
-            } else {
-                $parent.removeClass("editing");
-            }
-        }
-    }
-
-    function invalid($el, active) {
-        if (active) {
-            $el.addClass("invalid");
-        } else {
-            $el.removeClass("invalid");
-        }
-        var selector = getData($el).closestSelector;
-        if (selector) {
-            var $parent = $el.closest(selector);
-            if (active) {
-                $parent.addClass("invalid");
-            } else {
-                $parent.removeClass("invalid");
-            }
-        }
-    }
-
-    function initialize($el) {
-        if (!validate($el, getBindingValue($el))) {
-            invalid($el, true);
-        }
-        $el.on(event("click"), click);
-    }
-
     function click() {
-        var $parent = $(this);
-        var data = getData($parent);
-        setValue($parent, "moveToNextElement", true);
-        var previousText = $.trim($parent.text());
-        setValue($parent, "previousText", previousText);
-        var previousBindingValue = getBindingValue($parent);
-        setValue($parent, "previousBindingValue", previousBindingValue);
-        var text = previousBindingValue;
-        var isValid = !$parent.hasClass("invalid");
-        if (isValid) {
-            if (text !== "" && isNumericType(data.type)) {
-                var value;
-                if (data.type === "percentage") {
-                    value = parseText(text, "decimal") * 100;
-                    // achieve a text that user can edit without percent sign
-                    text = formatValue(value, "decimal", data.savedDecimals, !data.editFormatted);
-                } else if (data.editFormatted) {
-                    value = parseText(text, data.type);
-                    text = formatValue(value, data.type === "currency" ? "decimal" : data.type, data.savedDecimals, false);
-                }
+        var $input = $(this);
+        var $parent = $input;
+        var data = $parent.data(pluginName);
+        var text = $parent.text();
+        if (!$parent.hasClass("invalid")) {
+            // edit with format
+            if (data.type === "percentage") {
+                text = formatValue(data.value ? data.value * 100 : 0, "decimal", data.savedDecimals, false);
+            } else if (isNumericType(data.type)) {
+                text = formatValue(data.value, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
             }
-            setValue($parent, "previousValidText", previousText);
-            setValue($parent, "previousValidBindingValue", previousBindingValue);
         }
         var $input = createInput($parent, text);
         $input.on(event("click"), function (e) {
-            editing($(this).parent(), true);
+            editing($parent, true, data.closestSelector);
             e.stopPropagation();
         });
-        $input.on(event("blur"), blur);
         $input.on(event("keydown"), keydown);
         $input.on(event("keyup"), keyup);
+        $input.on(event("blur"), blur);
         $parent.empty();
         $parent.append($input);
         $input.select();
-        editing($parent, true);
+        editing($parent, true, data.closestSelector);
     }
 
     function keydown(e) {
@@ -325,7 +289,7 @@
         var isArrow = isUpArrow || isRightArrow || isDownArrow || isLeftArrow;
         var $input = $(this);
         var $parent = $input.parent();
-        var data = getData($parent);
+        var data = $parent.data(pluginName);
         if (data.readonly && !(isEsc || isTab || isEnter || isArrow)) {
             e.preventDefault();
             return;
@@ -339,8 +303,7 @@
             if (isEsc) {
                 return;
             }
-            var moveToNextElement = getValue($parent, "moveToNextElement");
-            if (!moveToNextElement) {
+            if (!data.moveToNextElement) {
                 return;
             }
             var next = true;
@@ -363,7 +326,7 @@
 
     function keyup() {
         var $input = $(this);
-        var data = getData($input.parent());
+        var data = $input.parent().data(pluginName);
         var currentValue = $input.val();
         if (
             data.readonly ||
@@ -376,13 +339,13 @@
         if (lastCharacter === DECIMAL_SEPARATOR || lastCharacter === "0") {
             return;
         }
-        var parsedValue = parseText(currentValue, data.type);
-        if (isNaN(parsedValue)) {
+        var value = parseText(currentValue, data.type);
+        if (isNaN(value)) {
             return;
         }
         var caretPosition = getStartCaretPosition($input[0]);
         var currentNumberOfThousandSeparator = getNumberOfThousandSeparator(currentValue);
-        var newValue = formatValue(parsedValue, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
+        var newValue = formatValue(value, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
         var newNumberOfThousandSeparator = getNumberOfThousandSeparator(newValue);
         if (newValue !== currentValue) {
             $input.val(newValue);
@@ -395,13 +358,13 @@
         }
     }
 
-    function getStartCaretPosition(input) {        
+    function getStartCaretPosition(input) {
         return input.selectionStart;
     }
 
     function getEndCaretPosition(input) {
         return input.selectionEnd;
-    }    
+    }
 
     function setCaretPosition(input, position) {
         if (typeof position === "string") {
@@ -426,71 +389,130 @@
     function blur() {
         var $input = $(this);
         var $parent = $input.parent();
-        var data = getData($parent);
-        var cancel = data.readonly || getValue($parent, "esc") === true;
+        var data = $parent.data(pluginName);
+        var cancel = data.readonly || data.esc;
         if (cancel) {
-            editing($parent, false);
-            invalid($parent, $parent.hasClass("invalid"));
+            editing($parent, false, data.closestSelector);
+            invalid($parent, $parent.hasClass("invalid"), data.closestSelector);
             $input.remove();
-            $parent.text(getValue($parent, "previousText"));
-            removeValue($parent, "esc");
+            $parent.text(data.previousText);
+            delete data.esc;
             return;
         }
-        var text = $.trim($input.val());
-        var bindingValue = text;
         var value;
-        var isValid = validate($parent, text);
-        if (isValid && isNumericType(data.type)) {
-            var values = getNumericValues(text, {
-                type: data.type,
-                displayedDecimals: data.displayedDecimals,
-                savedDecimals: data.savedDecimals
+        var bindingValue;
+        var text = $.trim($input.val());
+        var isValid = validate(text, {
+            type: data.type,
+            min: data.min,
+            max: data.max,
+            allowNegative: data.allowNegative,
+            required: data.required
+        });
+        setValue($parent, "isValid", isValid);
+        if (isValid) {
+            if (isNumericType(data.type)) {
+                var numericValues = getNumericValues(text, {
+                    type: data.type,
+                    displayedDecimals: data.displayedDecimals,
+                    savedDecimals: data.savedDecimals
+                });
+                value = numericValues.value;
+                bindingValue = numericValues.bindingValue;
+                text = numericValues.text;
+            }
+            setValue($parent, "value", value, {
+                attrKey: "value",
+                previousKey: "previousValue"
             });
-            text = values.text;
-            bindingValue = values.bindingValue;
-            value = values.value;
+            setValue($parent, "bindingValue", bindingValue, {
+                attrKey: "binding-value",
+                previousKey: "previousBindingValue"
+            });
+            setValue($parent, "text", text, {
+                previousKey: "previousText"
+            });
         } else {
             value = null;
+            bindingValue = "";
         }
-        editing($parent, false);
-        invalid($parent, !isValid);
+        var dirty = data.previousText !== text;
+        setValue($parent, "dirty", dirty, {
+            attrKey: "dirty"
+        });
+        editing($parent, false, data.closestSelector);
+        invalid($parent, !isValid, data.closestSelector);
         $input.remove();
         $parent.text(text);
-        setValue($parent, "bindingValue", bindingValue, "binding-value");
-        setValue($parent, "value", value.toString(), "value");
-        var originalBindingValue = $parent.attr("data-original-binding-value");
-        var dirty = originalBindingValue !== bindingValue;
-        originalBindingValue = originalBindingValue ? parseText(originalBindingValue, data.type) : null;
-        setValue($parent, "dirty", dirty, "dirty");
-        var previousText = getValue($parent, "previousText");
-        var previousBindingValue = getValue($parent, "previousBindingValue");
-        var previousValidText = getValue($parent, "previousValidText");
-        var previousValidBindingValue = getValue($parent, "previousValidBindingValue");
         var eventData = {
-            previousValue: validate($parent, previousText) && previousText !== "" ?
-                parseText(previousBindingValue, data.type) : null,
-            previousBindingValue: previousBindingValue,
-            previousText: previousText,
-            previousValidValue: previousValidText ? parseText(previousValidBindingValue, data.type) : null,
-            previousValidBindingValue: previousValidBindingValue,
-            previousValidText: previousValidText,
+            originalValue: data.originalValue,
+            originalBindingValue: data.originalBindingValue,
+            originalText: data.originalText,
+            hasChangedOriginal: data.originalText !== text,
+            previousValue: data.previousValue,
+            previousBindingValue: data.previousBindingValue,
+            previousText: data.previousText,
             value: value,
             bindingValue: bindingValue,
             text: text,
-            hasValue: !!bindingValue,
-            hasChangedValue: previousBindingValue !== bindingValue,
+            hasValue: !!text,
             isValid: isValid,
-            originalValue: originalBindingValue,
-            hasChangedOriginalValue: originalBindingValue !== value,
+            hasChanged: data.previousText !== text,
             dirty: dirty
         };
         log(eventData, data.tag);
         var onChangedReturnValue = true;
-        if (eventData.hasChangedValue) {
+        if (eventData.hasChanged) {
             onChangedReturnValue = (data.events.onChanged || $.noop)($parent, eventData);
         }
         setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
-        removeValue($parent, "esc");
+        delete data.esc;
+    }
+
+    function initialize($el) {
+        var data = $el.data(pluginName);
+        if (!("bindingValue" in data) || data.bindingValue === undefined) {
+            data.bindingValue = "";
+        } else {
+            data.bindingValue = data.bindingValue.toString();
+        }
+        data.isValid = validate(data.bindingValue, {
+            type: data.type,
+            min: data.min,
+            max: data.max,
+            allowNegative: data.allowNegative,
+            required: data.required
+        });
+        if (!data.isValid) {
+            invalid($el, true, data.closestSelector);
+            data.originalValue = null;
+            data.originalBindingValue = null;
+            data.originalText = "";
+            data.previousValue = null;
+            data.previousBindingValue = null;
+            data.previousText = "";
+            data.value = null;
+            data.text = "";
+        } else {
+            var value = null;
+            if (data.bindingValue !== "") {
+                value = parseText(data.bindingValue, data.type);
+            }
+            data.value = value;
+            var text = "";
+            if (value !== null) {
+                text = formatValue(data.value, data.type, data.displayedDecimals, false);
+                $el.attr("data-value", data.value.toString().replace(DECIMAL_SEPARATOR, "."));
+                $el.text(text);
+            }
+            data.text = text;
+            data.originalValue = data.value;
+            data.originalBindingValue = data.bindingValue;
+            data.originalText = data.text;
+            data.previousValue = data.value;
+            data.previousBindingValue = data.bindingValue;
+            data.previousText = data.text;
+        }
     }
 
     var methods = {
@@ -504,15 +526,21 @@
                     if (data.siblings && !(data.siblings instanceof jQuery)) {
                         data.siblings = $(data.siblings);
                     }
+                    if (!("bindingValue" in data) || data.bindingValue === undefined) {
+                        data.bindingValue = "";
+                    } else {
+                        data.bindingValue = data.bindingValue.toString();
+                    }
                     $this.data(pluginName, data);
                     initialize($this);
+                    $this.on(event("click"), click);
                 }
             });
         },
         destroy: function () {
             return this.each(function () {
                 var $this = $(this);
-                var data = getData($this);
+                var data = $this.data(pluginName);
                 if (data) {
                     $this.empty();
                     $this.removeClass("editing");
@@ -560,35 +588,32 @@
     $.extend({
         elementToInput: (function () {
             return {
-                setElement: function ($parent, text, bindingValue) {
-                    $parent = getjQueryElement($parent);
-                    setValue($parent, "bindingValue", bindingValue, "binding-value");
-                    var dirty = $parent.text() !== text;
-                    $parent.text(text);
-                    if (!validate($parent, text)) {
-                        invalid($parent, true);
-                    }
-                    $.elementToInput.setDirty($parent, dirty);
+                setElement: function ($parent, bindingValue) {
+                    var data = $parent.data(pluginName);
+                    var previousBindingValue = data.bindingValue;
+                    data.bindingValue = bindingValue;
+                    initialize($parent);
+                    $.elementToInput.setDirty($parent, previousBindingValue !== bindingValue);
                 },
                 setDirty: function ($parent, dirty) {
-                    $parent = getjQueryElement($parent);
-                    setValue($parent, "dirty", dirty, "dirty");
+                    setValue($parent, "dirty", dirty, {
+                        attrKey: "dirty"
+                    });
                 },
-                getNumericValues: function ($el) {
-                    $el = getjQueryElement($el);
+                getValues: function ($el) {
                     if ($el[0].tagName.toUpperCase() === "INPUT") {
                         $el = $input.parent();
                     }
                     var isValid = !$el.hasClass("invalid");
-                    var data = getData($el);
-                    if (!isValid || !isNumericType(data.type)) {
+                    var data = $el.data(pluginName);
+                    if (!isValid) {
                         return null;
                     }
-                    return getNumericValues($.trim($el.text()), {
-                        type: data.type,
-                        displayedDecimals: data.displayedDecimals,
-                        savedDecimals: data.savedDecimals
-                    });
+                    return {
+                        value: data.value,
+                        bindingValue: data.bindingValue,
+                        text: data.text
+                    }
                 }
             }
         })()
