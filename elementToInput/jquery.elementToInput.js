@@ -385,9 +385,20 @@
             delete data.esc;
             return;
         }
+        $input.remove();
+        var eventData = changeText($parent, $.trim($input.val()));
+        var onChangedReturnValue = true;
+        if (eventData.hasChanged) {
+            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, eventData);
+        }
+        setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
+        delete data.esc;
+    }
+
+    function changeText($parent, text) {
+        var data = $parent.data(pluginName);
         var value;
         var bindingValue;
-        var text = $.trim($input.val());
         var isValid = validate(text, {
             type: data.type,
             min: data.min,
@@ -432,9 +443,8 @@
         });
         editing($parent, false, data.closestSelector);
         invalid($parent, !data.isValid, data.closestSelector);
-        $input.remove();
         $parent.text(text);
-        var eventData = {
+        var result = {
             originalValue: data.originalValue,
             originalBindingValue: data.originalBindingValue,
             originalText: data.originalText,
@@ -450,13 +460,8 @@
             hasChanged: data.previousText !== data.text,
             isDirty: data.isDirty
         };
-        console.log(eventData);
-        var onChangedReturnValue = true;
-        if (eventData.hasChanged) {
-            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, eventData);
-        }
-        setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
-        delete data.esc;
+        console.log(result);
+        return result;
     }
 
     function initialize($el) {
@@ -479,19 +484,20 @@
         setValue($el, "isValid", isValid, {
             attrKey: "is-valid"
         });
+        invalid($el, !data.isValid, data.closestSelector);
         if (!data.isValid) {
-            invalid($el, true, data.closestSelector);
+            $el.removeAttr("data-binding-value");
             data.originalValue = null;
             data.originalBindingValue = null;
-            data.originalText = "";
+            data.originalText = data.bindingValue;
             data.previousValue = null;
             data.previousBindingValue = null;
-            data.previousText = "";
-            var bindingValue = data.bindingValue;
+            data.previousText = data.bindingValue;
             data.value = null;
             data.bindingValue = "";
-            data.text = bindingValue;
+            data.text = data.originalText;
         } else {
+            $el.attr("data-binding-value", data.bindingValue);
             var value = null;
             if (data.bindingValue !== "") {
                 if (isNumericType(data.type)) {
@@ -590,12 +596,8 @@
     $.extend({
         elementToInput: (function () {
             return {
-                setElement: function ($parent, bindingValue) {
-                    var data = $parent.data(pluginName);
-                    var previousBindingValue = data.bindingValue;
-                    data.bindingValue = bindingValue;
-                    initialize($parent);
-                    $.elementToInput.setDirty($parent, previousBindingValue !== bindingValue);
+                setBindingValue: function ($parent, bindingValue) {
+                    changeText($parent, bindingValue);
                 },
                 setDirty: function ($parent, isDirty) {
                     setValue($parent, "isDirty", isDirty, {

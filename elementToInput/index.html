@@ -17,13 +17,9 @@
     <input type="button" value="Destroy" id="btnDestroy" />
     <table id="table1">
         <tr>
-            <td data-binding-value="0,5225" data-type="percentage"></td>
-            <td data-binding-value="5215,12" data-type="decimal" ></td>
-            <td data-binding-value="sergio" data-type="decimal" ></td>
-            <td data-binding-value="" data-type="decimal" data-required="true" ></td>
-            <td data-type="decimal" data-required="true" ></td>
-            <td data-binding-value="1000" data-type="int" ></td>
-            <td data-binding-value="1999,69" data-type="currency" ></td>
+            <td data-type="decimal" data-binding-value="123,45"></td>
+            <td></td>
+            <td></td>
         </tr>
     </table>
 
@@ -153,15 +149,7 @@
                 <td>
                     <input type="checkbox" v-model="options.cyclicTabulation">
                 </td>
-            </tr>
-            <tr>
-                <td>
-                    format
-                </td>
-                <td>
-                    <input type="text" v-model="options.format">
-                </td>
-            </tr>            
+            </tr>           
         </table>
     </div>
     <h3>Options</h3>
@@ -171,21 +159,20 @@
     events: {
         onChanged: function ($el, data) {
             /*data = {
-                previousValue: string,
-                previousDataValue: string,
-                previousText: string,
-                previousValidValue: string,
-                previousValidDataValue: string,
-                previousValidText: string,
-                value: any,
-                dataValue: string,
-                text: string,
-                hasValue: boolean,
-                hasChangedValue: boolean,
-                isValid: boolean,
-                originalValue: any,
-                hasChangedOriginalValue: boolean,
-                dirty: boolean
+                originalValue: ,
+                originalBindingValue: ,
+                originalText: ,
+                hasChangedOriginal: ,
+                previousValue: ,
+                previousBindingValue: ,
+                previousText: ,
+                value: ,
+                bindingValue: ,
+                text: ,
+                hasValue: ,
+                isValid: ,
+                hasChanged: ,
+                isDirty: 
             };*/
 
             //return false for don't move to next cell
@@ -195,9 +182,11 @@
     <h3>Methods</h3>
     <table>
         <tr>
-            <td>Set element</td>
+            <td>Set binding value
+                <div class="hint">Does not fire onChanged event</div>
+            </td>
             <td>
-                <pre>$.elementToInput.setElement($parent, text, dataValue);</pre>
+                <pre>$.elementToInput.setBindingValue($parent, bindingValue);</pre>
             </td>
         </tr>
         <tr>
