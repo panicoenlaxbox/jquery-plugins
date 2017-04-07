@@ -3,10 +3,10 @@
     height: 50px;
 }
 
-table td.editing .element_to_input {
+table td.editing, table td.editing .element_to_input {
     background-color: yellow;
 }
 
-table td.invalid .element_to_input {
+table td.invalid, table td.invalid .element_to_input {
     background-color: red;
 }
