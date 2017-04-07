@@ -460,7 +460,6 @@
             hasChanged: data.previousText !== data.text,
             isDirty: data.isDirty
         };
-        console.log(result);
         return result;
     }
 
