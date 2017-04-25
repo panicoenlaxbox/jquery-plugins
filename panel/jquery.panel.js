@@ -162,36 +162,52 @@
         }
     }
 
+    function getMarginHeight($el) {
+        // outer height (including padding, border, and optionally margin)
+        // inner height (including padding but not border)
+        return $el.outerHeight(true) - $el.innerHeight();
+    }
+
     function calculateContentHeight($trigger) {
         var data = $trigger.data(dataKey);
-        if (!data.calculateContentHeight) {
+        if (!data.calculateContentHeight.active) {
             return;
         }
         var $panel = $(data.panel);
-        var $el = $panel.find(data.calculateContentHeight.selector);
+        var selector = data.calculateContentHeight.selector;
+        var $el = $panel.find(selector);
         if ($el.length === 0) {
             return;
         }
-        var height = $panel.height() - getHeight($panel, $el);
+        console.log(`selector ${selector}`);
+        var panelHeight = $panel.height();
+        console.log(`panel height ${panelHeight}`);
+        var usedHeight = getUsedHeight($panel, $el);
+        console.log(`used height ${usedHeight}`);
+        var availableHeight = panelHeight - usedHeight - getMarginHeight($el);
+        console.log(`available height ${availableHeight}`);
         $el.css({
             overflow: "auto"
-        }).height(height);
+        }).height(availableHeight);
     }
 
-    function getHeight($container, $contained) {
+    function getUsedHeight($container, $except) {
         var children = $container.children().toArray();
-        var contained = $contained[0];
+        var except = $except[0];
         var height = 0;
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var $child = $(child);
-            if (child === contained) {
+            if (child === except) {
                 continue;
             }
-            if ($.contains(child, contained)) {
-                height += getHeight($child, $contained);
-            } else {
-                height += $child.outerHeight(true);
+            if ($.contains(child, except)) {
+                height += getMarginHeight($child);
+                height += getUsedHeight($child, $except);
+            } else if ($child.is(":visible") && !$child.hasClass("blockUI")) {
+                var childHeight = $child.outerHeight(true);
+                console.log(`sum ${childHeight} from ${$child.attr("class")}`);
+                height += childHeight;
             }
         }
         return height;
