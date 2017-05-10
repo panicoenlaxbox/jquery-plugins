@@ -387,10 +387,10 @@
             return;
         }
         $input.remove();
-        var eventData = changeText($parent, $.trim($input.val()));
+        var changeTextResult = changeText($parent, $.trim($input.val()));
         var onChangedReturnValue = true;
-        if (eventData.hasChanged) {
-            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, eventData);
+        if (changeTextResult.hasChanged) {
+            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, changeTextResult.result);
         }
         setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
         delete data.esc;
@@ -438,7 +438,7 @@
         setValue($parent, "text", text, {
             previousKey: "previousText"
         });
-        var isDirty = data.previousText !== text;
+        var isDirty = data.originalText !== text;
         setValue($parent, "isDirty", isDirty, {
             attrKey: "is-dirty"
         });
@@ -446,22 +446,27 @@
         invalid($parent, !data.isValid, data.closestSelector);
         $parent.text(text);
         var result = {
-            originalValue: data.originalValue,
-            originalBindingValue: data.originalBindingValue,
-            originalText: data.originalText,
-            hasChangedOriginal: data.originalText !== data.text,
-            previousValue: data.previousValue,
-            previousBindingValue: data.previousBindingValue,
-            previousText: data.previousText,
+            original: {
+                value: data.originalValue,
+                bindingValue: data.originalBindingValue,
+                text: data.originalText
+            },
+            previous: {
+                value: data.previousValue,
+                bindingValue: data.previousBindingValue,
+                text: data.previousText
+            },            
             value: data.value,
             bindingValue: data.bindingValue,
             text: data.text,
             hasValue: !!data.text,
-            isValid: data.isValid,
-            hasChanged: data.previousText !== data.text,
+            isValid: data.isValid,            
             isDirty: data.isDirty
         };
-        return result;
+        return {
+            result: result,
+            hasChanged: data.previousText !== data.text
+        }
     }
 
     function initialize($el) {

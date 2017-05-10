@@ -17,8 +17,8 @@
     <input type="button" value="Destroy" id="btnDestroy" />
     <table id="table1">
         <tr>
-            <td data-type="decimal" data-binding-value="123,45"></td>
-            <td></td>
+            <td data-type="decimal" data-binding-value="1234,56"></td>
+            <td data-type="decimal" data-binding-value="1234,56"></td>
             <td></td>
         </tr>
     </table>
@@ -167,19 +167,21 @@
     events: {
         onChanged: function ($el, data) {
             /*data = {
-                originalValue: ,
-                originalBindingValue: ,
-                originalText: ,
-                hasChangedOriginal: ,
-                previousValue: ,
-                previousBindingValue: ,
-                previousText: ,
+                original: {
+                    value: ,
+                    bindingValue: ,
+                    text: 
+                },
+                previous: {
+                    value: ,
+                    bindingValue: ,
+                    text: 
+                },            
                 value: ,
                 bindingValue: ,
                 text: ,
                 hasValue: ,
-                isValid: ,
-                hasChanged: ,
+                isValid: ,            
                 isDirty: 
             };*/
 
@@ -207,6 +209,7 @@
             <td>Get numeric values</td>
             <td>
                 <pre>$.elementToInput.getValues($el);
+                    // $el can be the parent element or the created input element
                     returns {
                         value: number, // typed value
                         bindingValue: string, // value ready for binding, aware of culture
@@ -265,7 +268,10 @@
             var $cells = $("td", "#table1");
             options.siblings = $cells;
             options.events = {
-                onChanged: function ($el, data) {
+                onChanged: function ($el, data) {                    
+                    console.log(data);
+                    console.log($el.data());
+
                 }
             };
             $cells.elementToInput(options);
