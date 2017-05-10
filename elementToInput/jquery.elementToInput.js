@@ -85,7 +85,8 @@
         var format;
         switch (type) {
             case "int":
-                format: "n0"
+                format = "n0";
+                break;
             case "decimal":
                 format = "n" + decimals;
                 break;
