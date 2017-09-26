@@ -1,4 +1,4 @@
-﻿/*
+/*
  * jQuery Plugin 
  * Copyright 2015, Sergio León
  * http://panicoenlaxbox.blogspot.com/
@@ -10,6 +10,8 @@
 
     var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
     var THOUSAND_SEPARATOR = Globalize.culture().numberFormat[","];
+
+    var fakeRelatedTarget;
 
     function getNextElement($el, next) {
         var data = $el.data(pluginName);
@@ -66,7 +68,7 @@
     }
 
     function trailingZero(value) {
-        if (value === null) {
+        if (value === null || value.indexOf(DECIMAL_SEPARATOR) === -1) {
             return value;
         }
         while (value.substr(value.length - 1, 1) === "0") {
@@ -108,7 +110,7 @@
     function createInput($el, value) {
         var $input = $("<input type=\"text\" />");
         $input.val(value);
-        $input.addClass("element_to_input");
+        $input.addClass("element_to_input2");
         var data = $el.data(pluginName);
         if (data.excelStyle) {
             $input.css({
@@ -237,8 +239,7 @@
     }
 
     function click() {
-        var $input = $(this);
-        var $parent = $input;
+        var $parent = $(this);
         var data = $parent.data(pluginName);
         var text = data.text;
         if (data.isValid) {
@@ -261,6 +262,7 @@
         $parent.append($input);
         $input.select();
         editing($parent, true, data.closestSelector);
+        (data.events.onFocus || $.noop)($input);
     }
 
     function keydown(e) {
@@ -285,19 +287,20 @@
             e.preventDefault();
             if (isEsc) {
                 setValue($parent, "esc", true);
+            }            
+            var nextElement;
+            if (!isEsc) {
+                var next = true;
+                if ((isTab && isShift) || isUpArrow) {
+                    next = false;
+                }
+                nextElement = getNextElement($parent, next);
+                fakeRelatedTarget = nextElement;
             }
             $input.blur();
             if (isEsc) {
                 return;
             }
-            if (!data.moveToNextElement) {
-                return;
-            }
-            var next = true;
-            if ((isTab && isShift) || isUpArrow) {
-                next = false;
-            }
-            var nextElement = getNextElement($parent, next);
             if (nextElement) {
                 $(nextElement).click();
             }
@@ -373,7 +376,7 @@
         setCaretPosition(input, text);
     }
 
-    function blur() {
+    function blur(e) {
         var $input = $(this);
         var $parent = $input.parent();
         var data = $parent.data(pluginName);
@@ -382,18 +385,23 @@
             editing($parent, false, data.closestSelector);
             invalid($parent, !data.isValid, data.closestSelector);
             $input.remove();
+            console.log(data.previousText);
             $parent.text(data.previousText);
             delete data.esc;
+            (data.events.onBlur || $.noop)(e, $parent);
             return;
         }
         $input.remove();
-        var changeTextResult = changeText($parent, $.trim($input.val()));
-        var onChangedReturnValue = true;
+        var changeTextResult = changeText($parent, $.trim($input.val()));        
         if (changeTextResult.hasChanged) {
-            onChangedReturnValue = (data.events.onChanged || $.noop)($parent, changeTextResult.result);
+            (data.events.onChanged || $.noop)($parent, changeTextResult.result);
         }
-        setValue($parent, "moveToNextElement", onChangedReturnValue === false ? false : true);
         delete data.esc;
+        if (fakeRelatedTarget) {
+            e.relatedTarget = fakeRelatedTarget;
+            fakeRelatedTarget = null;
+        }
+        (data.events.onBlur || $.noop)(e, $parent);
     }
 
     function changeText($parent, text) {
@@ -455,12 +463,12 @@
                 value: data.previousValue,
                 bindingValue: data.previousBindingValue,
                 text: data.previousText
-            },            
+            },
             value: data.value,
             bindingValue: data.bindingValue,
             text: data.text,
             hasValue: !!data.text,
-            isValid: data.isValid,            
+            isValid: data.isValid,
             isDirty: data.isDirty
         };
         return {
@@ -526,6 +534,9 @@
             data.previousText = data.text;
         }
         $el.text(data.text);
+        // How to focus div? [duplicate]
+        // https://stackoverflow.com/a/17042452
+        $el.attr("tabindex", "-1");
     }
 
     var methods = {
@@ -591,36 +602,41 @@
         siblings: null,
         editFormatted: true,
         events: {
-            onChanged: null
+            onChanged: null,
+            onFocus: null,
+            onBlur: null
         },
         tag: null,
         excelStyle: true,
         cyclicTabulation: true
     };
 
-    $.extend({
-        elementToInput: (function () {
-            return {
-                setBindingValue: function ($parent, bindingValue) {
-                    changeText($parent, bindingValue);
-                },
-                setDirty: function ($parent, isDirty) {
-                    setValue($parent, "isDirty", isDirty, {
+    var extend = {};
+    extend[pluginName] = (function () {
+        return {
+            setBindingValue: function ($parent, bindingValue) {
+                changeText($parent, bindingValue);
+            },
+            setDirty: function ($parent, isDirty) {
+                setValue($parent,
+                    "isDirty",
+                    isDirty,
+                    {
                         attrKey: "is-dirty"
                     });
-                },
-                getValues: function ($el) {
-                    if ($el[0].tagName.toUpperCase() === "INPUT") {
-                        $el = $input.parent();
-                    }
-                    var data = $el.data(pluginName);
-                    return {
-                        value: data.value,
-                        bindingValue: data.bindingValue,
-                        text: data.text
-                    }
+            },
+            getValues: function ($el) {
+                if ($el[0].tagName.toUpperCase() === "INPUT") {
+                    $el = $input.parent();
+                }
+                var data = $el.data(pluginName);
+                return {
+                    value: data.value,
+                    bindingValue: data.bindingValue,
+                    text: data.text
                 }
             }
-        })()
+        }
     });
+    $.extend(extend);
 })(jQuery);
