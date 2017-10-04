@@ -6,7 +6,7 @@
 (function ($) {
     "use strict";
 
-    var pluginName = "elementToInput";
+    var pluginName = "elementToInput2";
 
     var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
     var THOUSAND_SEPARATOR = Globalize.culture().numberFormat[","];
