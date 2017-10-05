@@ -6,6 +6,10 @@
 (function ($) {
     "use strict";
 
+    function log(message) {
+        //console.log(message);
+    }
+
     var pluginName = "elementToInput2";
 
     var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
@@ -287,7 +291,7 @@
             e.preventDefault();
             if (isEsc) {
                 setValue($parent, "esc", true);
-            }            
+            }
             var nextElement;
             if (!isEsc) {
                 var next = true;
@@ -298,12 +302,17 @@
                 fakeRelatedTarget = nextElement;
             }
             $input.blur();
-            if (isEsc) {
-                return;
-            }
-            if (nextElement) {
-                $(nextElement).click();
-            }
+            setTimeout(function () {
+                // IE 11 does not throw blur event immediately
+                // http://latentflip.com/loupe/?code=JC5vbignYnV0dG9uJywgJ2NsaWNrJywgZnVuY3Rpb24gb25DbGljaygpIHsKICAgIHNldFRpbWVvdXQoZnVuY3Rpb24gdGltZXIoKSB7CiAgICAgICAgY29uc29sZS5sb2coJ1lvdSBjbGlja2VkIHRoZSBidXR0b24hJyk7ICAgIAogICAgfSwgMjAwMCk7Cn0pOwoKY29uc29sZS5sb2coIkhpISIpOwoKc2V0VGltZW91dChmdW5jdGlvbiB0aW1lb3V0KCkgewogICAgY29uc29sZS5sb2coIkNsaWNrIHRoZSBidXR0b24hIik7Cn0sIDUwMDApOwoKY29uc29sZS5sb2coIldlbGNvbWUgdG8gbG91cGUuIik7!!!PGJ1dHRvbj5DbGljayBtZSE8L2J1dHRvbj4%3D
+                if (isEsc) {
+                    return;
+                }
+                if (nextElement) {
+                    $(nextElement).click();
+                }
+            }, 0);
+
         }
         if (isNumericType(data.type)) {
             var isNumpadComma = e.keyCode === 110;
@@ -385,14 +394,13 @@
             editing($parent, false, data.closestSelector);
             invalid($parent, !data.isValid, data.closestSelector);
             $input.remove();
-            console.log(data.previousText);
             $parent.text(data.previousText);
             delete data.esc;
             (data.events.onBlur || $.noop)(e, $parent);
             return;
         }
         $input.remove();
-        var changeTextResult = changeText($parent, $.trim($input.val()));        
+        var changeTextResult = changeText($parent, $.trim($input.val()));
         if (changeTextResult.hasChanged) {
             (data.events.onChanged || $.noop)($parent, changeTextResult.result);
         }
