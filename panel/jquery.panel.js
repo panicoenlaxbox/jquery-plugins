@@ -38,11 +38,11 @@
         if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
             return false;
         }
-        $trigger.removeClass("panel-trigger-opened");
+        $trigger.removeClass(pluginName + "-trigger-opened");
         $(data._overlay).remove();
         delete data._overlay;
         var $panel = $(data.panel);
-        $panel.removeClass("panel-opened");
+        $panel.removeClass(pluginName + "-opened");
         $panel.hide();
         data._opened = false;
         openedTriggers.pop();
@@ -167,12 +167,6 @@
     }
 
     function calculateContentHeight($trigger, isRecalculating) {
-        //selector[data - role='content']
-        //jquery.panel.js:12 panel height 495
-        //jquery.panel.js:12 sum 26 from undefined
-        //jquery.panel.js:12 sum 25 from undefined
-        //jquery.panel.js:12 used height 51
-        //jquery.panel.js:12 available height 444
         var data = $trigger.data(dataKey);
         if (!data.calculateContentHeight.active || (isRecalculating && !data.calculateContentHeight.recalculate)) {
             return;
@@ -182,13 +176,9 @@
         if ($el.length === 0) {
             return;
         }
-        log(`selector ${data.calculateContentHeight.selector}`);
         var panelHeight = $panel.height();
-        log(`panel height ${panelHeight}`);
         var usedHeight = getUsedHeight($panel, $el);
-        log(`used height ${usedHeight}`);
         var availableHeight = panelHeight - usedHeight - getMarginHeight($el);
-        log(`available height ${availableHeight}`);
         $el.css({ overflow: "auto" }).height(availableHeight);
     }
 
@@ -207,7 +197,6 @@
                 height += getUsedHeight($child, $except);
             } else if ($child.is(":visible") && !$child.hasClass("blockUI")) {
                 var childHeight = $child.outerHeight(true);
-                log(`sum ${childHeight} from ${$child.attr("class")}`);
                 height += childHeight;
             }
         }
@@ -229,17 +218,12 @@
         });
     }
 
-    function createOverlay($panel) {
+    function createOverlay($panel, opacity) {
         var $trigger = $($panel.data(dataKey).trigger);
         var data = $trigger.data(dataKey);
         var zIndex = parseInt($panel.css("z-index")) - 1;
-        var opacity = data.overlay.style.opacity;
-        if (data.overlay.removeOpacityIfNotFirst && $("[data-role='panel-overlay']:visible").length > 0) {
-            opacity = 0;
-        }
-        var backgroundColor = data.overlay.style.backgroundColor;
-        return $("<div />", {
-            "data-role": "panel-overlay",
+        var $overlay = $("<div />", {
+            "data-role": pluginName + "-overlay",
             css: {
                 "position": "fixed",
                 "top": 0,
@@ -247,10 +231,11 @@
                 "left": 0,
                 "bottom": 0,
                 "opacity": opacity,
-                "background-color": backgroundColor,
+                "background-color": data.overlay.style.backgroundColor,
                 "z-index": zIndex
             }
         });
+        return $overlay;
     }
 
     function open(e, animation) {
@@ -270,9 +255,9 @@
         if ((data.events.onBeforeOpen || $.noop)(this, data.panel) === false) {
             return false;
         }
-        $trigger.addClass("panel-trigger-opened");
+        $trigger.addClass(pluginName + "-trigger-opened");
         var $panel = $(data.panel);
-        $panel.addClass("panel-opened");
+        $panel.addClass(pluginName + "-opened");
         var zIndex;
         if (data._parentPanel) {
             zIndex = parseInt($(data._parentPanel).css("z-index"), 10) + 1;
@@ -295,7 +280,11 @@
             data._originalBodyOverflow = $("body").css("overflow");
             $("body").css("overflow", "hidden");
         }
-        var $overlay = createOverlay($panel);
+        var opacity = data.overlay.style.opacity;
+        if (data.overlay.removeOpacityIfNotFirst && $("[data-role='" + pluginName + "-overlay']:visible").length > 0) {
+            opacity = 0;
+        }
+        var $overlay = createOverlay($panel, opacity);
         $("body").append($overlay);
         data._overlay = $overlay[0];
         animation = animation === undefined ? data.animation.active : animation;
@@ -382,7 +371,7 @@
                     settings._originalTriggerStyle = $trigger.attr("style");
                     settings._originalPanelClass = $panel.attr("class");
                     settings._originalPanelStyle = $panel.attr("style");
-                    $trigger.addClass("panel-trigger");
+                    $trigger.addClass(pluginName + "-trigger");
                     $trigger.on("click." + pluginName, function (e) {
                         if (!settings._opened) {
                             open.call($trigger[0], e);
@@ -391,7 +380,7 @@
                         }
                         e.stopPropagation();
                     });
-                    $panel.hide().addClass("panel").css({
+                    $panel.hide().addClass(pluginName).css({
                         "position": (settings.sticky ? "fixed" : "absolute")
                     });
                     if (settings.centered) {
