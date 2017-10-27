@@ -6,12 +6,10 @@
 (function ($) {
     "use strict";
 
+    var pluginName = "panel";
     var dataKey = "_panel";
 
-    function log(message, tag) {
-        if (tag) {
-            message = tag + ": " + message;
-        }
+    function log(message) {
         //console.log(message);
     }
 
@@ -31,22 +29,20 @@
                 }
             }
         }
-        log("onBeforeClose", data.tag);
         if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
             return false;
         }
-        $trigger.removeClass("tab-panel-trigger-opened");
+        $trigger.removeClass("panel-trigger-opened");
         $(data._overlay).remove();
         delete data._overlay;
         var $panel = $(data.panel);
-        $panel.removeClass("tab-panel-opened");
+        $panel.removeClass("panel-opened");
         $panel.hide();
         data._opened = false;
         openedTriggers.pop();
         if (data._originalBodyOverflow) {
             $("body").css("overflow", data._originalBodyOverflow);
         }
-        log("onClose", data.tag);
         if (data.events.onClose) {
             data.events.onClose(this, data.panel);
         }
@@ -56,9 +52,7 @@
         return true;
     }
 
-    $(document).on("click.panel", function (e) {
-        log("document click.panel");
-
+    $(document).on("click." + pluginName, function (e) {
         if (openedTriggers.length === 0) {
             return;
         }
@@ -138,7 +132,6 @@
         } else {
             openedTriggers.push(trigger);
         }
-        log("onOpen", data.tag);
         (data.events.onOpen || $.noop)(trigger, data.panel);
         var loadIfSelectorNotExist = data.ajax.loadIfSelectorNotExist;
         var loadUrl = data.ajax.url && (!loadIfSelectorNotExist || ($(loadIfSelectorNotExist, data.panel).length === 0));
@@ -149,16 +142,15 @@
             }
             $(el).block();
             load(el, data.ajax.url).done(function (_data, textStatus, jqXHR) {
-                log("onAjaxDone", data.tag);
                 (data.events.onAjaxDone || $.noop)(trigger, data.panel, el, _data, textStatus, jqXHR);
             }).fail(function (jqXHR, textStatus, errorThrown) {
                 (data.events.onAjaxFail || $.noop)(trigger, data.panel, jqXHR, textStatus, errorThrown);
             }).always(function () {
-                calculateContentHeight($trigger);
+                calculateContentHeight($trigger, false);
                 $(el).unblock();
             });
         } else {
-            calculateContentHeight($trigger);
+            calculateContentHeight($trigger, false);
         }
     }
 
@@ -168,27 +160,30 @@
         return $el.outerHeight(true) - $el.innerHeight();
     }
 
-    function calculateContentHeight($trigger) {
+    function calculateContentHeight($trigger, isRecalculating) {
+        //selector[data - role='content']
+        //jquery.panel.js:12 panel height 495
+        //jquery.panel.js:12 sum 26 from undefined
+        //jquery.panel.js:12 sum 25 from undefined
+        //jquery.panel.js:12 used height 51
+        //jquery.panel.js:12 available height 444
         var data = $trigger.data(dataKey);
-        if (!data.calculateContentHeight.active) {
+        if (!data.calculateContentHeight.active || (isRecalculating && !data.calculateContentHeight.recalculate)) {
             return;
         }
         var $panel = $(data.panel);
-        var selector = data.calculateContentHeight.selector;
-        var $el = $panel.find(selector);
+        var $el = $panel.find(data.calculateContentHeight.selector);
         if ($el.length === 0) {
             return;
         }
-        console.log(`selector ${selector}`);
+        log(`selector ${data.calculateContentHeight.selector}`);
         var panelHeight = $panel.height();
-        console.log(`panel height ${panelHeight}`);
+        log(`panel height ${panelHeight}`);
         var usedHeight = getUsedHeight($panel, $el);
-        console.log(`used height ${usedHeight}`);
+        log(`used height ${usedHeight}`);
         var availableHeight = panelHeight - usedHeight - getMarginHeight($el);
-        console.log(`available height ${availableHeight}`);
-        $el.css({
-            overflow: "auto"
-        }).height(availableHeight);
+        log(`available height ${availableHeight}`);
+        $el.css({ overflow: "auto" }).height(availableHeight);
     }
 
     function getUsedHeight($container, $except) {
@@ -206,7 +201,7 @@
                 height += getUsedHeight($child, $except);
             } else if ($child.is(":visible") && !$child.hasClass("blockUI")) {
                 var childHeight = $child.outerHeight(true);
-                console.log(`sum ${childHeight} from ${$child.attr("class")}`);
+                log(`sum ${childHeight} from ${$child.attr("class")}`);
                 height += childHeight;
             }
         }
@@ -242,13 +237,12 @@
             if (open.call(data._parentTrigger, e, false) === false)
                 return false;
         }
-        log("onBeforeOpen", data.tag);
         if ((data.events.onBeforeOpen || $.noop)(this, data.panel) === false) {
             return false;
         }
-        $trigger.addClass("tab-panel-trigger-opened");
+        $trigger.addClass("panel-trigger-opened");
         var $panel = $(data.panel);
-        $panel.addClass("tab-panel-opened");
+        $panel.addClass("panel-opened");
         var zIndex;
         if (data._parentPanel) {
             zIndex = parseInt($(data._parentPanel).css("z-index"), 10) + 1;
@@ -325,14 +319,16 @@
                 _parentChildTriggers.splice(index, 1);
             }
             var $panel = $(data.panel);
-            $panel.off(".panel");
+            $panel.off("." + pluginName);
             restoreAttr($panel, "style", data._originalPanelStyle);
             restoreAttr($panel, "class", data._originalPanelClass);
             $panel.removeData(dataKey);
-            $trigger.off(".panel");
+            $(window).off("resize." + data.unique);
             restoreAttr($trigger, "style", data._originalTriggerStyle);
             restoreAttr($trigger, "class", data._originalTriggerClass);
             $trigger.removeData(dataKey);
+            $trigger.off("." + pluginName);
+
         }
     }
 
@@ -375,9 +371,8 @@
                     settings._originalTriggerStyle = $trigger.attr("style");
                     settings._originalPanelClass = $panel.attr("class");
                     settings._originalPanelStyle = $panel.attr("style");
-                    $trigger.addClass("tab-panel-trigger");
-                    $trigger.on("click.panel", function (e) {
-                        log("trigger click.panel", settings.tag);
+                    $trigger.addClass("panel-trigger");
+                    $trigger.on("click." + pluginName, function (e) {
                         if (!settings._opened) {
                             open.call($trigger[0], e);
                         } else {
@@ -385,7 +380,7 @@
                         }
                         e.stopPropagation();
                     });
-                    $panel.hide().addClass("tab-panel").css({
+                    $panel.hide().addClass("panel").css({
                         "position": (settings.sticky ? "fixed" : "absolute")
                     });
                     if (settings.centered) {
@@ -396,24 +391,29 @@
                             "transform": "translate(-50%, -50%)"
                         });
                     }
-                    $panel.on("click.panel", function (e) {
-                        log("panel click.panel", settings.tag);
+                    $panel.on("click." + pluginName, function (e) {
                         if ($(e.target).is(settings.closePanelSelector)) {
                             close.call($trigger[0], e);
                             e.stopPropagation();
                         } else {
-                            var _childTriggers = settings._childTriggers;
-                            if (_childTriggers) {
-                                for (var i = 0; i < _childTriggers.length; i++) {
-                                    if (!close.call(_childTriggers[i], e)) {
+                            var childTriggers = settings._childTriggers;
+                            if (childTriggers) {
+                                for (var i = 0; i < childTriggers.length; i++) {
+                                    if (!close.call(childTriggers[i], e)) {
                                         break;
                                     }
                                 }
-                                //e.stopPropagation();
                             }
                         }
                     });
+                    settings.unique = getRandomString();
                     $trigger.data(dataKey, settings);
+                    $(window).on("resize." + settings.unique, function () {
+                        var data = $trigger.data(dataKey);
+                        if (data._opened) {
+                            calculateContentHeight($trigger, true);
+                        }
+                    });
                     $panel.data(dataKey, {
                         trigger: this
                     });
@@ -436,9 +436,14 @@
         }
     };
 
+    function getRandomString() {
+        // https://stackoverflow.com/a/8084248
+        return Math.random().toString(36).substr(2, 5);
+    }
+
     function restoreAttr($el, name, value) {
         if (value) {
-            $el.attr(name, value)
+            $el.attr(name, value);
         } else {
             $el.removeAttr(name, value);
         }
@@ -450,7 +455,7 @@
         } else if (typeof method === "object" || !method) {
             return methods.init.apply(this, arguments);
         } else {
-            $.error("Method " + method + " does not exist on jQuery.panel");
+            $.error("Method " + method + " does not exist on jQuery." + pluginName);
         }
     };
 
@@ -505,7 +510,8 @@
         centered: false,
         calculateContentHeight: {
             active: true,
-            selector: "[data-role='content']"
+            selector: "[data-role='content']",
+            recalculate: true
         }
     };
 
@@ -544,7 +550,7 @@
                     return $panel[0];
                 },
                 getParentPanel: function (el) {
-                    var $panel = getjQueryElement(el).closest(".tab-panel");
+                    var $panel = getjQueryElement(el).closest(".panel");
                     return $panel[0];
                 }
             }

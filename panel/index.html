@@ -22,6 +22,7 @@
         </div>
         <div data-role="content">
             <input type="button" value="Open" id="btnTrigger2" data-panel="#panel2" data-parent-trigger="#btnTrigger1" />
+            <!--data-overlay--modal="true"-->
             <h1>Sergio</h1>
             <h1>Sergio</h1>
             <h1>Sergio</h1>
@@ -224,7 +225,9 @@
                 </td>
             </tr>
             <tr>
-                <td>fillWindowHeight</td>
+                <td>fillWindowHeight
+                    <div class="hint">Not applicable if centered</div>
+                </td>
                 <td>
                     <input type="checkbox" v-model="options.fillWindowHeight">
                 </td>
@@ -355,7 +358,8 @@
                 </td>
             </tr>
             <tr>
-                <td>sticky
+                <td>
+                    sticky
                     <div class="hint">if sticky, panel will be fixed, if not will be absolute</div>
                 </td>
                 <td>
@@ -387,6 +391,12 @@
                 </td>
                 <td>
                     <input type="text" v-model="options.calculateContentHeight.selector">
+                </td>
+            </tr>
+            <tr>
+                <td>calculateContentHeight.recalculate</td>
+                <td>
+                    <input type="checkbox" v-model="options.calculateContentHeight.recalculate">
                 </td>
             </tr>
             <tr>
@@ -524,6 +534,11 @@ console.log(o.panel);
             options.events = {
                 onOpen: function (trigger, panel) {
                     $("#btnTrigger2").panel();
+                },
+                onClose: function() {
+                    //setTimeout(function() {
+                    //    $("#btnTrigger1").panel("destroy");
+                    //}, 0);
                 }
             };
             $trigger.panel(options);
