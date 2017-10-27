@@ -542,13 +542,11 @@
                 },
                 getTrigger: function (panel) {
                     var $panel = getjQueryElement(panel);
-                    var $trigger = $($panel.data(dataKey).trigger);
-                    return $trigger[0];
+                    return $panel.data(dataKey).trigger;
                 },
                 getPanel: function (trigger) {
                     var $trigger = getjQueryElement(trigger);
-                    var $panel = $($trigger.data(dataKey).panel);
-                    return $panel[0];
+                    return $trigger.data(dataKey).panel;
                 },
                 getParentPanel: function (el) {
                     var $panel = getjQueryElement(el).closest(".panel");
