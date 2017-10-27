@@ -5,19 +5,6 @@
     overflow: auto;
 }
 
-#panel [data-role=header] {    
-    background-color: blue;
-}
-
-#panel1 [data-role=content] {
-    background-color: blueviolet;
-}
-
-#panel1 [data-role=footer] {
-    background-color: olive;
-    height: 25px;
-}
-
 #panel2 {
     background-color: yellow;
     height: 250px;
