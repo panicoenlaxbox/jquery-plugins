@@ -11,42 +11,6 @@
 
     var openedTriggers = [];
 
-    function close(e) {
-        // this DOM element
-        var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
-        if (!data._opened) {
-            return true;
-        }
-        if (data._childTriggers) {
-            for (var i = 0; i < data._childTriggers.length; i++) {
-                if (!close.call(data._childTriggers[i], e)) {
-                    return false;
-                }
-            }
-        }
-        if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
-            return false;
-        }
-        $trigger.removeClass(pluginName + "-trigger-opened");
-        $(data._overlay).remove();
-        delete data._overlay;
-        var $panel = $(data.panel);
-        $panel.removeClass(pluginName + "-opened").hide();
-        data._opened = false;
-        openedTriggers.pop();
-        if (data._original.bodyOverflow) {
-            $("body").css("overflow", data._original.bodyOverflow);
-        }
-        if (data.events.onClose) {
-            data.events.onClose(this, data.panel);
-        }
-        if (data.destroyOnClose) {
-            destroy.call(this);
-        }
-        return true;
-    }
-
     $(document).on("click." + pluginName, function (e) {
         if (openedTriggers.length === 0) {
             return;
@@ -74,6 +38,14 @@
             return el[0];
         }
         return el;
+    }
+
+    function restoreOriginalAttr($el, name, value) {
+        if (value) {
+            $el.attr(name, value);
+        } else {
+            $el.removeAttr(name, value);
+        }
     }
 
     function getAjaxRecipientElement(panel, appendContentToSelector) {
@@ -238,6 +210,42 @@
         return true;
     }
 
+    function close(e) {
+        // this DOM element
+        var $trigger = $(this);
+        var data = $trigger.data(pluginKey);
+        if (!data._opened) {
+            return true;
+        }
+        if (data._childTriggers) {
+            for (var i = 0; i < data._childTriggers.length; i++) {
+                if (!close.call(data._childTriggers[i], e)) {
+                    return false;
+                }
+            }
+        }
+        if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
+            return false;
+        }
+        $trigger.removeClass(pluginName + "-trigger-opened");
+        $(data._overlay).remove();
+        delete data._overlay;
+        var $panel = $(data.panel);
+        $panel.removeClass(pluginName + "-opened").hide();
+        data._opened = false;
+        openedTriggers.pop();
+        if (data._original.bodyOverflow) {
+            $("body").css("overflow", data._original.bodyOverflow);
+        }
+        if (data.events.onClose) {
+            data.events.onClose(this, data.panel);
+        }
+        if (data.destroyOnClose) {
+            destroy.call(this);
+        }
+        return true;
+    }
+
     function destroy() {
         var $trigger = $(this);
         var data = $trigger.data(pluginKey);
@@ -368,14 +376,6 @@
             });
         }
     };
-
-    function restoreOriginalAttr($el, name, value) {
-        if (value) {
-            $el.attr(name, value);
-        } else {
-            $el.removeAttr(name, value);
-        }
-    }
 
     $.fn.panel = function (method) {
         if (methods[method]) {
