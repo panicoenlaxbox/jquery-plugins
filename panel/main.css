@@ -2,7 +2,7 @@
     background-color: red;
     height: 75%;
     width: 75%; 
-    overflow: auto;   
+    overflow: auto;
 }
 
 #panel [data-role=header] {    
@@ -22,4 +22,5 @@
     background-color: yellow;
     height: 250px;
     width: 500px;
+    overflow: auto;
 }
