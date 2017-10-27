@@ -9,6 +9,12 @@
     var pluginName = "panel";
     var dataKey = "_panel";
 
+    //$trigger.data().panel
+    //$trigger.data()[dataKey]
+
+    //$panel.data().trigger
+    //$panel.data()[dataKey]
+
     function log(message) {
         //console.log(message);
     }
@@ -223,6 +229,30 @@
         });
     }
 
+    function createOverlay($panel) {
+        var $trigger = $($panel.data(dataKey).trigger);
+        var data = $trigger.data(dataKey);
+        var zIndex = parseInt($panel.css("z-index")) - 1;
+        var opacity = data.overlay.style.opacity;
+        if (data.overlay.removeOpacityIfNotFirst && $("[data-role='panel-overlay']:visible").length > 0) {
+            opacity = 0;
+        }
+        var backgroundColor = data.overlay.style.backgroundColor;
+        return $("<div />", {
+            "data-role": "panel-overlay",
+            css: {
+                "position": "fixed",
+                "top": 0,
+                "right": 0,
+                "left": 0,
+                "bottom": 0,
+                "opacity": opacity,
+                "background-color": backgroundColor,
+                "z-index": zIndex
+            }
+        });
+    }
+
     function open(e, animation) {
         // this DOM element
         var $trigger = $(this);
@@ -265,26 +295,7 @@
             data._originalBodyOverflow = $("body").css("overflow");
             $("body").css("overflow", "hidden");
         }
-        zIndex = parseInt($panel.css("z-index")) - 1;
-        var opacity = data.overlay.style.opacity;
-        if (data.overlay.removeOpacityIfNotFirst) {
-            if ($("[data-role='panel-overlay']:visible").length > 0) {
-                opacity = 0;
-            }
-        }
-        var $overlay = $("<div />", {
-            "data-role": "panel-overlay",
-            css: {
-                "position": "fixed",
-                "top": 0,
-                "right": 0,
-                "left": 0,
-                "bottom": 0,
-                "opacity": opacity,
-                "background-color": data.overlay.style.backgroundColor,
-                "z-index": zIndex
-            }
-        });
+        var $overlay = createOverlay($panel);
         $("body").append($overlay);
         data._overlay = $overlay[0];
         animation = animation === undefined ? data.animation.active : animation;
@@ -489,7 +500,8 @@
                 backgroundColor: "#000",
                 opacity: 0.5
             },
-            removeOpacityIfNotFirst: true
+            removeOpacityIfNotFirst: true,
+            applyOpacityToChild: false
         },
         offset: {
             left: 0,

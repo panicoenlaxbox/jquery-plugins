@@ -225,7 +225,8 @@
                 </td>
             </tr>
             <tr>
-                <td>fillWindowHeight
+                <td>
+                    fillWindowHeight
                     <div class="hint">Not applicable if centered</div>
                 </td>
                 <td>
@@ -254,6 +255,12 @@
                 <td>overlay.removeOpacityIfNotFirst</td>
                 <td>
                     <input type="checkbox" v-model="options.overlay.removeOpacityIfNotFirst">
+                </td>
+            </tr>
+            <tr>
+                <td>overlay.applyOpacityToChild</td>
+                <td>
+                    <input type="checkbox" v-model="options.overlay.applyOpacityToChild">
                 </td>
             </tr>
             <tr>
@@ -535,7 +542,7 @@ console.log(o.panel);
                 onOpen: function (trigger, panel) {
                     $("#btnTrigger2").panel();
                 },
-                onClose: function() {
+                onClose: function () {
                     //setTimeout(function() {
                     //    $("#btnTrigger1").panel("destroy");
                     //}, 0);
