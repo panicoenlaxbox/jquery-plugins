@@ -12,16 +12,12 @@
     var openedTriggers = [];
 
     $(document).on("click." + pluginName, function (e) {
-        if (openedTriggers.length === 0) {
-            return;
-        }
-        if (!$.contains(document, e.target)) {
+        if (openedTriggers.length === 0 || !$.contains(document, e.target)) {
             return;
         }
         var currentOpenedTrigger = openedTriggers[openedTriggers.length - 1];
-        var $target = $(e.target);
         var data = $(currentOpenedTrigger).data(pluginKey);
-        if ($target.is(data._overlay) && !data.overlay.modal) {
+        if ($(e.target).is(data._overlay) && !data.overlay.modal) {
             close.call(currentOpenedTrigger);
         }
     });
