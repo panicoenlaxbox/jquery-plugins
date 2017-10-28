@@ -165,8 +165,13 @@
         if (data.shrinkParentPanelWidthTo && data._parentPanel) {
             var $parentPanel = $(data._parentPanel);
             var $parentTrigger = $(data._parentTrigger);
-            $parentTrigger.data(pluginKey)._original.panel.width = $parentPanel.css("width");
-            $parentPanel.css("width", data.shrinkParentPanelWidthTo);
+            var _originalPanel = $parentTrigger.data(pluginKey)._original.panel;
+            _originalPanel.width = $parentPanel.css("width");
+            _originalPanel.overflow = $parentPanel.css("overflow");
+            $parentPanel.css({
+                "width": data.shrinkParentPanelWidthTo,
+                "overflow": "hidden"
+            });
         }
         $trigger.addClass(pluginName + "-trigger-opened");
         var $panel = $(data.panel);
@@ -245,7 +250,9 @@
         if (data.shrinkParentPanelWidthTo && data._parentPanel) {
             var $parentPanel = $(data._parentPanel);
             var $parentTrigger = $(data._parentTrigger);
-            $parentPanel.css("width", $parentTrigger.data(pluginKey)._original.panel.width);
+            var _originalPanel = $parentTrigger.data(pluginKey)._original.panel;
+            $parentPanel.css("width", _originalPanel.width);
+            $parentPanel.css("overflow", _originalPanel.overflow);
         }
         if (data.destroyOnClose) {
             destroy.call(this);
