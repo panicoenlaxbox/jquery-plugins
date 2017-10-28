@@ -370,7 +370,7 @@
                     }
                     settings._positioning = !settings.fullScreen && !settings.centered;
                     $panel.on("click." + pluginName, function (e) {
-                        if ($(e.target).is(settings.closePanelSelector)) {
+                        if ($(e.target).is(settings.closeSelector)) {
                             close.call($trigger[0], e);
                             e.stopPropagation();
                         } else {
@@ -430,7 +430,7 @@
             appendToSelector: null,
             url: null
         },
-        closePanelSelector: ".close,[data-role='close']",
+        closeSelector: ".close,[data-role='close']",
         events: {
             onAjaxDone: null,
             onAjaxFail: null,
