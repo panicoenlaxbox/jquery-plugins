@@ -111,6 +111,24 @@
         }
     }
 
+    function convertToPx($el, value) {
+        if (isPercentage(value)) {
+            value = getWidthFromPercentage($el, value);
+        } else {
+            value = parseInt(value);
+        }
+        return value;
+    }
+
+    function isPercentage(value) {
+        return value.toString()[value.length - 1] === "%";
+    }
+
+    function getWidthFromPercentage($el, percentage) {
+        var width = $el.parent().outerWidth();
+        return ((parseInt(percentage) * width) / 100);
+    }
+
     function positioning($el, position, offset) {
         // http://api.jqueryui.com/position/
         $el.position({
@@ -119,10 +137,10 @@
             of: position.of,
             collision: position.collision
         });
-        position = $el.position();
+        var currentPosition = $el.position();
         $el.css({
-            top: (position.top + parseInt(offset.top)) + "px",
-            left: (position.left + parseInt(offset.left)) + "px"
+            top: (currentPosition.top + convertToPx($el, offset.top)) + "px",
+            left: (currentPosition.left + convertToPx($el, offset.left)) + "px"
         });
     }
 
@@ -161,17 +179,6 @@
         }
         if ((data.events.onBeforeOpen || $.noop)(this, data.panel, data._parentPanel) === false) {
             return false;
-        }
-        if (data.shrinkParentPanelWidthTo && data._parentPanel) {
-            var $parentPanel = $(data._parentPanel);
-            var $parentTrigger = $(data._parentTrigger);
-            var _originalPanel = $parentTrigger.data(pluginKey)._original.panel;
-            _originalPanel.width = $parentPanel.css("width");
-            _originalPanel.overflow = $parentPanel.css("overflow");
-            $parentPanel.css({
-                "width": data.shrinkParentPanelWidthTo,
-                "overflow": "hidden"
-            });
         }
         $trigger.addClass(pluginName + "-trigger-opened");
         var $panel = $(data.panel);
@@ -246,13 +253,6 @@
         }
         if (data.events.onClose) {
             data.events.onClose(this, data.panel, data._parentPanel);
-        }
-        if (data.shrinkParentPanelWidthTo && data._parentPanel) {
-            var $parentPanel = $(data._parentPanel);
-            var $parentTrigger = $(data._parentTrigger);
-            var _originalPanel = $parentTrigger.data(pluginKey)._original.panel;
-            $parentPanel.css("width", _originalPanel.width);
-            $parentPanel.css("overflow", _originalPanel.overflow);
         }
         if (data.destroyOnClose) {
             destroy.call(this);
@@ -449,7 +449,6 @@
         sticky: false,
         tag: null,
         zIndex: 500,
-        centered: false,
-        shrinkParentPanelWidthTo: null
+        centered: false
     };
 })(jQuery);
