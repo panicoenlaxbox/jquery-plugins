@@ -9,19 +9,21 @@
         #panel2,
         #panel3 {
             overflow: auto;
-            width: 30%;
         }
 
         #panel1 {
             background-color: red;
+            width: 25%;
         }
 
         #panel2 {
             background-color: yellow;
+            width: 50%;
         }
 
         #panel3 {
             background-color: red;
+            width: 75%;
         }
     </style>
     <title>Example</title>
@@ -58,21 +60,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script>
         $("#trigger1").panel();
-        $("#trigger2").panel({
-            // events: {
-            //     onBeforeOpen: function (trigger, panel, parentPanel) {
-            //         var $parentPanel = $(parentPanel);
-            //         $parentPanel.data("originalWidth", $parentPanel.css("width"));
-            //         $parentPanel.css("width", "10%");
-            //     },
-            //     onClose: function (trigger, panel, parentPanel) {
-            //         var $parentPanel = $(parentPanel);
-            //         $parentPanel.css("width", $parentPanel.data("originalWidth"));
-            //     },
-            // }
-        });
-        $("#trigger3").panel({
-        });
+        $("#trigger2").panel();
+        $("#trigger3").panel();
     </script>
 </body>
 
