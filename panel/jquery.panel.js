@@ -111,18 +111,18 @@
         }
     }
 
-    function positioning($panel, position, offset) {
+    function positioning($el, position, offset) {
         // http://api.jqueryui.com/position/
-        $panel.position({
+        $el.position({
             my: position.my,
             at: position.at,
             of: position.of,
             collision: position.collision
         });
-        position = $panel.position();
-        $panel.css({
-            top: (position.top + offset.top) + "px",
-            left: (position.left + offset.left) + "px"
+        position = $el.position();
+        $el.css({
+            top: (position.top + parseInt(offset.top)) + "px",
+            left: (position.left + parseInt(offset.left)) + "px"
         });
     }
 
