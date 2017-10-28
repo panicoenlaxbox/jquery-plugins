@@ -44,7 +44,7 @@
         }
     }
 
-    function getAjaxRecipientElement(panel, selector) {
+    function getAjaxTargetElement(panel, selector) {
         if (!selector) {
             return panel;
         }
@@ -96,7 +96,7 @@
         var cancelIfSelectorExists = data.ajax.cancelIfSelectorExists;
         var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.panel).length === 0));
         if (loadUrl) {
-            var el = getAjaxRecipientElement(data.panel, data.ajax.appendToSelector);
+            var el = getAjaxTargetElement(data.panel, data.ajax.appendToSelector);
             if (data.ajax.emptyBeforeLoad) {
                 $(el).empty();
             }
