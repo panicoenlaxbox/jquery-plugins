@@ -164,7 +164,8 @@
         }
         if (data.shrinkParentPanelWidthTo && data._parentPanel) {
             var $parentPanel = $(data._parentPanel);
-            $parentPanel.data("originalWidth", $parentPanel.css("width"));
+            var $parentTrigger = $(data._parentTrigger);
+            $parentTrigger.data(pluginKey)._original.panel.width = $parentPanel.css("width");
             $parentPanel.css("width", data.shrinkParentPanelWidthTo);
         }
         $trigger.addClass(pluginName + "-trigger-opened");
@@ -243,7 +244,8 @@
         }
         if (data.shrinkParentPanelWidthTo && data._parentPanel) {
             var $parentPanel = $(data._parentPanel);
-            $parentPanel.css("width", $parentPanel.data("originalWidth"));
+            var $parentTrigger = $(data._parentTrigger);
+            $parentPanel.css("width", $parentTrigger.data(pluginKey)._original.panel.width);
         }
         if (data.destroyOnClose) {
             destroy.call(this);
