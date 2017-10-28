@@ -44,15 +44,15 @@
         }
     }
 
-    function getAjaxTargetElement(panel, selector) {
+    function getFoundSelectorOrParentElement(el, selector) {
         if (!selector) {
-            return panel;
+            return el;
         }
-        var $el = $(selector, panel);
+        var $el = $(selector, el);
         if ($el.length === 1) {
             return $el[0];
         }
-        return panel;
+        return el;
     }
 
     function load(el, url) {
@@ -96,7 +96,7 @@
         var cancelIfSelectorExists = data.ajax.cancelIfSelectorExists;
         var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.panel).length === 0));
         if (loadUrl) {
-            var el = getAjaxTargetElement(data.panel, data.ajax.appendToSelector);
+            var el = getFoundSelectorOrParentElement(data.panel, data.ajax.appendToSelector);
             if (data.ajax.emptyBeforeLoad) {
                 $(el).empty();
             }
