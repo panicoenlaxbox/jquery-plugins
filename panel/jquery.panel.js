@@ -36,7 +36,7 @@
         return el;
     }
 
-    function restoreOriginalAttr($el, name, value) {
+    function setOrRemoveAttr($el, name, value) {
         if (value) {
             $el.attr(name, value);
         } else {
@@ -277,12 +277,12 @@
                 _parentChildTriggers.splice(index, 1);
             }
             var $panel = $(data.panel);
-            restoreOriginalAttr($panel, "style", data._original.panel.style);
-            restoreOriginalAttr($panel, "class", data._original.panel.class);
+            setOrRemoveAttr($panel, "style", data._original.panel.style);
+            setOrRemoveAttr($panel, "class", data._original.panel.class);
             $panel.removeData(pluginKey);
             $panel.off("." + pluginName);
-            restoreOriginalAttr($trigger, "style", data._original.trigger.style);
-            restoreOriginalAttr($trigger, "class", data._original.trigger.class);
+            setOrRemoveAttr($trigger, "style", data._original.trigger.style);
+            setOrRemoveAttr($trigger, "class", data._original.trigger.class);
             $trigger.removeData(pluginKey);
             $trigger.off("." + pluginName);
         }
