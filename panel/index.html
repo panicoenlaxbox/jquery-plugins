@@ -131,6 +131,7 @@
                 <td>
                     animation.active
                     <div class="hint">slide</div>
+                    <div class="hint">false, if fullScreen or centered</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.animation.active">
@@ -162,32 +163,26 @@
             </tr>
             <tr>
                 <td>
-                    ajax.appendContentToSelector
+                    ajax.appendToSelector
                     <div class="hint">jQuery selector</div>
                 </td>
                 <td>
-                    <input type="text" v-model="options.ajax.appendContentToSelector">
+                    <input type="text" v-model="options.ajax.appendToSelector">
                 </td>
             </tr>
             <tr>
                 <td>
-                    ajax.loadIfSelectorNotExist
+                    ajax.cancelIfSelectorExists
                     <div class="hint">jQuery selector</div>
                 </td>
                 <td>
-                    <input type="text" v-model="options.ajax.loadIfSelectorNotExist">
+                    <input type="text" v-model="options.ajax.cancelIfSelectorExists">
                 </td>
             </tr>
             <tr>
-                <td>ajax.loading</td>
+                <td>ajax.emptyBeforeLoad</td>
                 <td>
-                    <input type="checkbox" v-model="options.ajax.loading">
-                </td>
-            </tr>
-            <tr>
-                <td>ajax.removeContentBeforeLoad</td>
-                <td>
-                    <input type="checkbox" v-model="options.ajax.removeContentBeforeLoad">
+                    <input type="checkbox" v-model="options.ajax.emptyBeforeLoad">
                 </td>
             </tr>
             <tr>
@@ -203,15 +198,6 @@
                 </td>
                 <td>
                     <input type="text" v-model="options.closePanelSelector">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    fillWindowHeight
-                    <div class="hint">Not applicable if centered</div>
-                </td>
-                <td>
-                    <input type="checkbox" v-model="options.fillWindowHeight">
                 </td>
             </tr>
             <tr>
@@ -255,6 +241,7 @@
                     <div class="hint">
                         <a href="https://api.jqueryui.com/position/">position</a>
                     </div>
+                    <div class="hint">Not applicable if fullScreen or centered</div>
                     <div class="hint">
                         "my" Defines which position on the element being positioned to align with the target element: "horizontal vertical" alignment
                     </div>
@@ -304,7 +291,7 @@
             <tr>
                 <td>
                     position.of
-                    <div class="hint">jQuery selector|DOM Element|jQuery element|function(trigger)</div>
+                    <div class="hint">jQuery selector|DOM Element|jQuery element|function(trigger):DOM Eelement</div>
                 </td>
                 <td>
                     <input type="text" v-model="options.position.of">
@@ -335,7 +322,7 @@
             </tr>
             <tr>
                 <td>removeBodyOverflow
-                    <div class="hint">true if overlay.modal == true</div>
+                    <div class="hint">true if overlay.modal == true or fullScreen</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.removeBodyOverflow">
@@ -344,22 +331,32 @@
             <tr>
                 <td>
                     sticky
-                    <div class="hint">if sticky, panel will be fixed, if not will be absolute</div>
+                    <div class="hint">if sticky, panel will be fixed, if not will be absolute, true if fullScreen or fullScreenHeight</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.sticky">
                 </td>
             </tr>
             <tr>
-                <td>tag</td>
-                <td>
-                    <input type="text" v-model="options.tag">
-                </td>
-            </tr>
-            <tr>
                 <td>zIndex</td>
                 <td>
                     <input type="text" v-model.number="options.zIndex">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    fullScreen
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.fullScreen">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    fullScreenHeight
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.fullScreenHeight">
                 </td>
             </tr>
             <tr>
@@ -490,7 +487,7 @@
             $trigger1.panel(options);
             var $trigger2 = $("#btnTrigger2");
             $trigger2.panel({
-                fillWindowHeight: true,
+                fullScreenHeight: true,
                 calculateContentHeight: {
                     selector: ".tab-content"
                 }

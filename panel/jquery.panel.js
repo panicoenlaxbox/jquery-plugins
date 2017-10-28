@@ -44,11 +44,11 @@
         }
     }
 
-    function getAjaxRecipientElement(panel, appendContentToSelector) {
-        if (!appendContentToSelector) {
+    function getAjaxRecipientElement(panel, selector) {
+        if (!selector) {
             return panel;
         }
-        var $el = $(appendContentToSelector, panel);
+        var $el = $(selector, panel);
         if ($el.length === 1) {
             return $el[0];
         }
@@ -93,11 +93,11 @@
             openedTriggers.push(trigger);
         }
         (data.events.onOpen || $.noop)(trigger, data.panel);
-        var loadIfSelectorNotExist = data.ajax.loadIfSelectorNotExist;
-        var loadUrl = data.ajax.url && (!loadIfSelectorNotExist || ($(loadIfSelectorNotExist, data.panel).length === 0));
+        var cancelIfSelectorExists = data.ajax.cancelIfSelectorExists;
+        var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.panel).length === 0));
         if (loadUrl) {
-            var el = getAjaxRecipientElement(data.panel, data.ajax.appendContentToSelector);
-            if (data.ajax.removeContentBeforeLoad) {
+            var el = getAjaxRecipientElement(data.panel, data.ajax.appendToSelector);
+            if (data.ajax.emptyBeforeLoad) {
                 $(el).empty();
             }
             $(el).block();
@@ -190,17 +190,16 @@
             zIndex = data.zIndex;
         }
         $panel.css("z-index", zIndex).show();
-        if (!data.centered) {
+        if (data._positioning) {
             positioning($panel, data.position, data.offset);
-            if (data.fillWindowHeight) {
+            if (data.fullScreenHeight) {
                 $panel.css({
-                    height: "100%",
-                    top: 0,
-                    position: "fixed"
+                    "top": "0",
+                    "height": "100%"
                 });
             }
         }
-        if (data.removeBodyOverflow || data.overlay.modal) {
+        if (data.removeBodyOverflow) {
             data._original.bodyOverflow = $("body").css("overflow");
             $("body").css("overflow", "hidden");
         }
@@ -212,7 +211,7 @@
         $("body").append($overlay);
         data._overlay = $overlay[0];
         animation = animation === undefined ? data.animation.active : animation;
-        if (animation && !data.centered) {
+        if (animation) {
             $panel.hide().show("slide", {
                 direction: data.animation.direction
             }, data.animation.duration, function () {
@@ -342,17 +341,34 @@
                         }
                         e.stopPropagation();
                     });
+                    if (settings.fullScreen || settings.fullScreenHeight) {
+                        settings.sticky = true;
+                    }
                     $panel.hide().addClass(pluginName).css({
                         "position": (settings.sticky ? "fixed" : "absolute")
                     });
-                    if (settings.centered) {
+                    if (settings.fullScreen) {
                         $panel.css({
-                            "position": "fixed",
+                            "top": "0",
+                            "left": "0",
+                            "width": "100%",
+                            "height": "100%"
+                        });
+                    }
+                    else if (settings.centered) {
+                        $panel.css({
                             "top": "50%",
                             "left": "50%",
                             "transform": "translate(-50%, -50%)"
                         });
                     }
+                    if (settings.fullScreen || settings.centered) {
+                        settings.animation.active = false;
+                    }
+                    if (settings.fullScreen || settings.overlay.modal) {
+                        settings.removeBodyOverflow = true;
+                    }
+                    settings._positioning = !settings.fullScreen && !settings.centered;
                     $panel.on("click." + pluginName, function (e) {
                         if ($(e.target).is(settings.closePanelSelector)) {
                             close.call($trigger[0], e);
@@ -409,13 +425,12 @@
             duration: "fast"
         },
         ajax: {
-            appendContentToSelector: null,
-            loadIfSelectorNotExist: null,
-            loading: false,
-            removeContentBeforeLoad: false,
+            cancelIfSelectorExists: null,
+            emptyBeforeLoad: false,
+            appendToSelector: null,
             url: null
         },
-        closePanelSelector: "[data-role='close']",
+        closePanelSelector: ".close,[data-role='close']",
         events: {
             onAjaxDone: null,
             onAjaxFail: null,
@@ -424,7 +439,6 @@
             onClose: null,
             onOpen: null
         },
-        fillWindowHeight: false,
         overlay: {
             modal: false,
             style: {
@@ -447,8 +461,9 @@
         },
         removeBodyOverflow: false,
         sticky: false,
-        tag: null,
         zIndex: 500,
+        fullScreen: false,
+        fullScreenHeight: false,
         centered: false
     };
 })(jQuery);
