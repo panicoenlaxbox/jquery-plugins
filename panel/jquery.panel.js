@@ -159,8 +159,13 @@
             if (open.call(data._parentTrigger, e, false) === false)
                 return false;
         }
-        if ((data.events.onBeforeOpen || $.noop)(this, data.panel) === false) {
+        if ((data.events.onBeforeOpen || $.noop)(this, data.panel, data._parentPanel) === false) {
             return false;
+        }
+        if (data.shrinkParentPanelWidthTo && data._parentPanel) {
+            var $parentPanel = $(data._parentPanel);
+            $parentPanel.data("originalWidth", $parentPanel.css("width"));
+            $parentPanel.css("width", data.shrinkParentPanelWidthTo);
         }
         $trigger.addClass(pluginName + "-trigger-opened");
         var $panel = $(data.panel);
@@ -234,7 +239,11 @@
             $("body").css("overflow", data._original.bodyOverflow);
         }
         if (data.events.onClose) {
-            data.events.onClose(this, data.panel);
+            data.events.onClose(this, data.panel, data._parentPanel);
+        }
+        if (data.shrinkParentPanelWidthTo && data._parentPanel) {
+            var $parentPanel = $(data._parentPanel);
+            $parentPanel.css("width", $parentPanel.data("originalWidth"));
         }
         if (data.destroyOnClose) {
             destroy.call(this);
@@ -431,6 +440,7 @@
         sticky: false,
         tag: null,
         zIndex: 500,
-        centered: false
+        centered: false,
+        shrinkParentPanelWidthTo: null
     };
 })(jQuery);

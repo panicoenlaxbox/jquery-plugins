@@ -13,7 +13,9 @@
 
 <body>
     <h1>jQuery Panel</h1>
-    <h4><a href="../index.html">Home</a></h4>
+    <h4>
+        <a href="../index.html">Home</a>
+    </h4>
     <input type="button" value="Open" id="btnTrigger1" data-panel="#panel1" />
     <input type="button" value="Open child" id="btnOpenChild" />
     <input type="button" value="Destroy" id="btnDestroy" />
@@ -366,6 +368,12 @@
                     <input type="checkbox" v-model="options.centered">
                 </td>
             </tr>
+            <tr>
+                <td>shrinkParentPanelWidthTo</td>
+                <td>
+                    <input type="checkbox" v-model="options.shrinkParentPanelWidthTo">
+                </td>
+            </tr>
         </table>
     </div>
     <h3>Options</h3>
@@ -378,10 +386,10 @@
         onBeforeClose: function (trigger, panel) {
             //return false for cancelling
         },
-        onBeforeOpen: function (trigger, panel) {
+        onBeforeOpen: function (trigger, panel, parentPanel) {
             //return false for cancelling
         },
-        onClose: function (trigger, panel) {},
+        onClose: function (trigger, panel, parentPanel) {},
         onOpen: function (trigger, panel) {}
     },        
     </pre>
@@ -413,11 +421,21 @@
     </table>
     <h3>Dependencies</h3>
     <ul>
-        <li><a href="https://code.jquery.com/jquery-2.1.3.min.js">https://code.jquery.com/jquery-2.1.3.min.js</a></li>
-        <li><a href="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js">https://code.jquery.com/ui/1.11.2/jquery-ui.min.js</a></li>
-        <li><a href="jquery.blockUI.js">jquery.blockUI.js</a></li>
-        <li><a href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js">https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js</a></li>
-        <li><a href="../lib/dataset.js">dataset.js</a></li>
+        <li>
+            <a href="https://code.jquery.com/jquery-2.1.3.min.js">https://code.jquery.com/jquery-2.1.3.min.js</a>
+        </li>
+        <li>
+            <a href="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js">https://code.jquery.com/ui/1.11.2/jquery-ui.min.js</a>
+        </li>
+        <li>
+            <a href="jquery.blockUI.js">jquery.blockUI.js</a>
+        </li>
+        <li>
+            <a href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js">https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js</a>
+        </li>
+        <li>
+            <a href="../lib/dataset.js">dataset.js</a>
+        </li>
     </ul>
     <script src="../index.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
