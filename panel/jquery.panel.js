@@ -210,7 +210,7 @@
             $("body").css("overflow", "hidden");
         }
         var opacity = data.overlay.style.opacity;
-        if (data.overlay.removeOpacityIfNotFirst && $("[data-role='" + pluginName + "-overlay']:visible").length > 0) {
+        if (data.overlay.transparentOpacityIfNotFirst && $("[data-role='" + pluginName + "-overlay']:visible").length > 0) {
             opacity = 0;
         }
         var $overlay = createOverlay($panel, opacity, data.overlay.top);
@@ -450,7 +450,7 @@
         overlay: {
             modal: false,
             top: 0,
-            removeOpacityIfNotFirst: true,
+            transparentOpacityIfNotFirst: true,
             style: {
                 backgroundColor: "#000",
                 opacity: 0.5
