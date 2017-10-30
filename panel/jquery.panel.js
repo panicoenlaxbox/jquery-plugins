@@ -483,7 +483,7 @@
         [pluginName]: (function () {
             return {
                 initialize: function () {
-                    // $.panel.initialize();
+                    // $.pluginName.initialize();
                     $("[data-role='" + pluginName + "-trigger']").panel();
                 }
             }
