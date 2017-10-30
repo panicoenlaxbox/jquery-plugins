@@ -478,14 +478,14 @@
         },
         centered: false
     };
-     
-     $.extend({
-        panel: (function () {
+
+    $.extend({
+        [pluginName]: (function () {
             return {
                 initialize: function () {
                     // $.panel.initialize();
-                    $("[data-role='panel-trigger']").panel();
-                }              
+                    $("[data-role='" + pluginName + "-trigger']").panel();
+                }
             }
         })()
     });
