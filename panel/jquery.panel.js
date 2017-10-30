@@ -17,7 +17,9 @@
         }
         var currentOpenedTrigger = openedTriggers[openedTriggers.length - 1];
         var data = $(currentOpenedTrigger).data(pluginKey);
-        if ($(e.target).is(data._overlay) && !data.overlay.modal) {
+        var hasClickedCurrentOpenedTriggerOverlay = $(e.target).is(data._overlay);
+        var isCurrentOpenedTriggerModal = data.overlay.modal;
+        if (hasClickedCurrentOpenedTriggerOverlay && !isCurrentOpenedTriggerModal) {
             close.call(currentOpenedTrigger);
         }
     });
@@ -144,7 +146,7 @@
         });
     }
 
-    function createOverlay($panel, opacity) {
+    function createOverlay($panel, opacity, top) {
         var $trigger = $($panel.data(pluginKey).trigger);
         var data = $trigger.data(pluginKey);
         var zIndex = parseInt($panel.css("z-index")) - 1;
@@ -152,7 +154,7 @@
             "data-role": pluginName + "-overlay",
             css: {
                 "position": "fixed",
-                "top": 0,
+                "top": top,
                 "right": 0,
                 "left": 0,
                 "bottom": 0,
@@ -211,7 +213,7 @@
         if (data.overlay.removeOpacityIfNotFirst && $("[data-role='" + pluginName + "-overlay']:visible").length > 0) {
             opacity = 0;
         }
-        var $overlay = createOverlay($panel, opacity);
+        var $overlay = createOverlay($panel, opacity, data.overlay.top);
         $("body").append($overlay);
         data._overlay = $overlay[0];
         animation = animation === undefined ? data.animation.active : animation;
@@ -371,6 +373,9 @@
                     if (settings.fullScreen || settings.overlay.modal) {
                         settings.removeBodyOverflow = true;
                     }
+                    if (settings.overlay.modal) {
+                        settings.overlay.top = 0;
+                    }
                     settings._positioning = !settings.fullScreen && !settings.centered;
                     $panel.on("click." + pluginName, function (e) {
                         if ($(e.target).is(settings.closeSelector)) {
@@ -444,11 +449,12 @@
         },
         overlay: {
             modal: false,
+            top: 0,
+            removeOpacityIfNotFirst: true,
             style: {
                 backgroundColor: "#000",
                 opacity: 0.5
-            },
-            removeOpacityIfNotFirst: true
+            }
         },
         offset: {
             left: 0,

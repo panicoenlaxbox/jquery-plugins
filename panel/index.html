@@ -225,6 +225,14 @@
                 </td>
             </tr>
             <tr>
+                <td>overlay.top
+                    <div class="hint">0 if overlay.modal == true</div>
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.overlay.top">
+                </td>
+            </tr>
+            <tr>
                 <td>offset.left</td>
                 <td>
                     <input type="text" v-model.number="options.offset.left">
@@ -366,7 +374,7 @@
                 <td>
                     <input type="text" v-model.text="options.fullScreenHeight.top">
                 </td>
-            </tr>            
+            </tr>
             <tr>
                 <td>centered</td>
                 <td>
