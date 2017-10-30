@@ -478,4 +478,15 @@
         },
         centered: false
     };
+     
+     $.extend({
+        panel: (function () {
+            return {
+                initialize: function () {
+                    // $.panel.initialize();
+                    $("[data-role='panel-trigger']").panel();
+                }              
+            }
+        })()
+    });
 })(jQuery);
