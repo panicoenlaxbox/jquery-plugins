@@ -4,8 +4,10 @@
     "\\bootstrap",
     "\\bootstrap\\css",
     "\\bootstrap\\img",
-    "\\bootstrap\\js"
+    "\\bootstrap\\js",
+    "\\panel",
+    "\\style"
   ],
-  "SelectedNode": "\\main.css",
+  "SelectedNode": "\\panel\\index.html",
   "PreviewInSolutionExplorer": false
 }

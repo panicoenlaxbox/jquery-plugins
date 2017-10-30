@@ -331,7 +331,7 @@
             <tr>
                 <td>
                     sticky
-                    <div class="hint">if sticky, panel will be fixed, if not will be absolute, true if fullScreen or fullScreenHeight</div>
+                    <div class="hint">if sticky, panel will be fixed, if not will be absolute, true if fullScreen or fullScreenHeight.active</div>
                 </td>
                 <td>
                     <input type="checkbox" v-model="options.sticky">
@@ -353,12 +353,20 @@
             </tr>
             <tr>
                 <td>
-                    fullScreenHeight
+                    fullScreenHeight.active
                 </td>
                 <td>
-                    <input type="checkbox" v-model="options.fullScreenHeight">
+                    <input type="checkbox" v-model="options.fullScreenHeight.active">
                 </td>
             </tr>
+            <tr>
+                <td>
+                    fullScreenHeight.top
+                </td>
+                <td>
+                    <input type="text" v-model.text="options.fullScreenHeight.top">
+                </td>
+            </tr>            
             <tr>
                 <td>centered</td>
                 <td>
@@ -487,9 +495,8 @@
             $trigger1.panel(options);
             var $trigger2 = $("#btnTrigger2");
             $trigger2.panel({
-                fullScreenHeight: true,
-                calculateContentHeight: {
-                    selector: ".tab-content"
+                fullScreenHeight: {
+                    active: true
                 }
             });
             $trigger2.panel("open");

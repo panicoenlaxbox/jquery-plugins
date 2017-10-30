@@ -1,0 +1,96 @@
+.container {
+    display: grid;
+    grid-template-rows: 50px 1fr;
+    grid-template-columns: 100vw;
+    height: 100vh;
+}
+
+.header {
+    align-items: center;
+    background-color: salmon;
+    display: flex;
+    justify-content: space-between;
+}
+
+.header__btn {
+    background-color: red;
+    height: 50px;
+    width: 50px;
+}
+
+.tools {
+    align-items: center;
+    display: flex;
+}
+
+.tools__item {
+    background-color: red;
+    height: 50px;
+    width: 50px;
+}
+
+.tools__item.a {
+    background-color: blue;
+}
+
+.tools__item.b {
+    background-color: olive;
+}
+
+.tools__item.c {
+    background-color: maroon;
+}
+
+.content {
+    background-color: gainsboro;
+}
+
+
+/* panel */
+
+#btn1_panel,
+#btn2_panel,
+#btn3_panel,
+#a_panel {
+    overflow: auto;
+}
+
+#btn1_panel {
+    background-color: red;
+    /* width: 200px; */
+    width: 20%;
+}
+
+#btn2_panel {
+    background-color: yellow;
+    /* width: 400px; */
+    /* data-offset--left="-100px" */
+    width: 40%;
+    /* data-offset--left="-10%" */
+}
+
+#btn3_panel {
+    background-color: red;
+    /* width: 600px; */
+    /* data-offset--left="-300px" */
+    width: 60%;
+    /* data-offset--left="-30%" */
+}
+
+#a_panel,
+#b_panel,
+#c_panel {
+    width: 40%;
+}
+
+#a_panel {
+    background-color: blue;
+}
+
+#b_panel {
+    background-color: olive;
+}
+
+#c_panel {
+    background-color: maroon;
+}

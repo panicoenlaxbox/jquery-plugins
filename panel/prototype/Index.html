@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Prototipos</title>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <section class="header">
+            <div class="header__btn" id="btn1" data-panel="#btn1_panel" data-animation--direction="left" data-full-screen-height--active="true"
+                data-full-screen-height--top="50px">
+            </div>
+            <div class="tools">
+                <div class="tools__item a" id="a" data-panel="#a_panel" data-position--of="#c" data-position--at="right top" data-position--my="right top"
+                    data-animation--direction="right" data-full-screen-height--active="true" data-full-screen-height--top="50px"></div>
+                <div class="tools__item b" id="b" data-panel="#b_panel" data-position--of="#c" data-position--at="right top" data-position--my="right top"
+                    data-animation--direction="right" data-full-screen-height--active="true" data-full-screen-height--top="50px"></div>
+                <div class="tools__item c" id="c" data-panel="#c_panel" data-position--of="#c" data-position--at="right top" data-position--my="right top"
+                    data-animation--direction="right" data-full-screen-height--active="true" data-full-screen-height--top="50px" data-overlay--style--opacity="0"></div>
+            </div>
+        </section>
+        <section class="content">
+        </section>
+    </div>
+    <div id="btn1_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+        <input type="button" value="Open" id="btn2" data-panel="#btn2_panel" data-parent-trigger="#btn1" data-position--of="#btn1_panel"
+            data-position--at="right top" data-position--my="left top" data-animation--direction="left" data-full-screen-height--active="true"
+            data-full-screen-height--top="50px" data-overlay--remove-opacity-if-not-first="false" data-overlay--style--opacity="0.2"
+            data-offset--left="-10%" />
+    </div>
+    <div id="btn2_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+        <input type="button" value="Open" id="btn3" data-panel="#btn3_panel" data-parent-trigger="#btn2" data-position--of="#btn2_panel"
+            data-position--at="right top" data-position--my="left top" data-animation--direction="left" data-full-screen-height--active="true"
+            data-full-screen-height--top="50px" data-overlay--remove-opacity-if-not-first="false" data-overlay--style--opacity="0.2"
+            data-offset--left="-30%" data-overlay--modal="true" />
+    </div>
+    <div id="btn3_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+        <p>¡Soy modal!</p>
+    </div>
+    <div id="a_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+    </div>
+    <div id="b_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+    </div>
+    <div id="c_panel" style="display: none;">
+        <input type="button" data-role="close" value="Close" />
+    </div>
+    <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.2/jquery-ui.min.js"></script>
+    <script src="../../lib/jquery.blockUI.js"></script>
+    <script src="../../lib/dataset.js"></script>
+    <script src="../jquery.panel.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script>
+        $("#btn1").panel();
+        $("#btn2").panel();
+        $("#btn3").panel();
+        $("#a").panel();
+        $("#b").panel();
+        $("#c").panel();
+    </script>
+</body>
+
+</html>

@@ -192,10 +192,14 @@
         $panel.css("z-index", zIndex).show();
         if (data._positioning) {
             positioning($panel, data.position, data.offset);
-            if (data.fullScreenHeight) {
+            if (data.fullScreenHeight.active) {
+                var height = "100%";
+                if (data.fullScreenHeight.top) {
+                    height = "calc(100% - " + data.fullScreenHeight.top + ")";
+                }
                 $panel.css({
-                    "top": "0",
-                    "height": "100%"
+                    "top": data.fullScreenHeight.top,
+                    "height": height
                 });
             }
         }
@@ -341,7 +345,7 @@
                         }
                         e.stopPropagation();
                     });
-                    if (settings.fullScreen || settings.fullScreenHeight) {
+                    if (settings.fullScreen || settings.fullScreenHeight.active) {
                         settings.sticky = true;
                     }
                     $panel.hide().addClass(pluginName).css({
@@ -354,8 +358,7 @@
                             "width": "100%",
                             "height": "100%"
                         });
-                    }
-                    else if (settings.centered) {
+                    } else if (settings.centered) {
                         $panel.css({
                             "top": "50%",
                             "left": "50%",
@@ -463,7 +466,10 @@
         sticky: false,
         zIndex: 500,
         fullScreen: false,
-        fullScreenHeight: false,
+        fullScreenHeight: {
+            active: false,
+            top: 0
+        },
         centered: false
     };
 })(jQuery);
