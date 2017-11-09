@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Prototipos</title>
-    <link rel="stylesheet" href="css/normalize.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
     <style>
-        /* https://stackoverflow.com/questions/2943548/how-to-reset-remove-chromes-input-highlighting-focus-border */
+        /* https://stackoverflow.com/a/17526407 */
 
         *:focus {
-            outline: none;
+            outline-style: none !important;
+            box-shadow: none !important;
+            border-color: transparent !important;
         }
 
         .toolbar {
@@ -119,31 +121,31 @@
 
     </div>
     <div id="menuPanel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
-        <input type="button" value="Open" data-role="panel-trigger" id="menu2Trigger" data-panel="#menu2Panel" data-parent-trigger="#menuTrigger"
-            data-position--of="#menuPanel" data-position--at="right top" data-position--my="left top" data-animation--direction="left"
-            data-full-screen-height--active="true" data-full-screen-height--top="50px" data-overlay--transparent-opacity-if-not-first="false"
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
+        <input type="button" value="Open" class="btn btn-primary" data-role="panel-trigger" id="menu2Trigger" data-panel="#menu2Panel"
+            data-parent-trigger="#menuTrigger" data-position--of="#menuPanel" data-position--at="right top" data-position--my="left top"
+            data-animation--direction="left" data-full-screen-height--active="true" data-full-screen-height--top="50px" data-overlay--transparent-opacity-if-not-first="false"
             data-overlay--style--opacity="0.2" data-offset--left="-10%" data-overlay--top="50px" />
     </div>
     <div id="menu2Panel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
-        <input type="button" value="Open" data-role="panel-trigger" id="menu3Trigger" data-panel="#menu3Panel" data-parent-trigger="#menu2Trigger"
-            data-position--of="#menu2Panel" data-position--at="right top" data-position--my="left top" data-animation--direction="left"
-            data-full-screen-height--active="true" data-full-screen-height--top="50px" data-overlay--transparent-opacity-if-not-first="false"
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
+        <input type="button" value="Open" class="btn btn-primary" data-role="panel-trigger" id="menu3Trigger" data-panel="#menu3Panel"
+            data-parent-trigger="#menu2Trigger" data-position--of="#menu2Panel" data-position--at="right top" data-position--my="left top"
+            data-animation--direction="left" data-full-screen-height--active="true" data-full-screen-height--top="50px" data-overlay--transparent-opacity-if-not-first="false"
             data-overlay--style--opacity="0.2" data-offset--left="-30%" data-overlay--modal="true" data-overlay--top="50px" />
     </div>
     <div id="menu3Panel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
         <p>¡Soy modal!</p>
     </div>
     <div id="configurationPanel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
     </div>
     <div id="notificationsPanel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
     </div>
     <div id="profilePanel" style="display: none;">
-        <input type="button" data-role="close" value="Close" />
+        <input type="button" data-role="close" value="Close" class="btn btn-secondary" />
     </div>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -151,8 +153,10 @@
     <script src="../../lib/dataset.js"></script>
     <script src="../jquery.panel.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
     <script>
         $.panel.initialize();
     </script>
