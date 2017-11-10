@@ -480,7 +480,7 @@
     };
 
     $.extend({
-        [pluginName]: (function () {
+        panel: (function () {
             return {
                 initialize: function () {
                     // $.pluginName.initialize();
