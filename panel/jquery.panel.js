@@ -195,9 +195,9 @@
         if (data._positioning) {
             positioning($panel, data.position, data.offset);
             if (data.fullScreenHeight.active) {
-                var height = "100vh";
+                var height = "100%";
                 if (data.fullScreenHeight.top) {
-                    height = "calc(100vh - " + data.fullScreenHeight.top + ")";
+                    height = "calc(100% - " + data.fullScreenHeight.top + ")";
                 }
                 $panel.css({
                     "top": data.fullScreenHeight.top,
@@ -357,8 +357,8 @@
                         $panel.css({
                             "top": "0",
                             "left": "0",
-                            "width": "100vw",
-                            "height": "100vh"
+                            "width": "100%",
+                            "height": "100%"
                         });
                     } else if (settings.centered) {
                         $panel.css({
