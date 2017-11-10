@@ -82,9 +82,16 @@
         .content {
             overflow: auto;
         }
+        /* mm */
 
         .fa-fw {
             text-align: initial;
+        }
+
+        .sidebar-nav .metismenu a:hover,
+        .sidebar-nav .metismenu a:focus,
+        .sidebar-nav .metismenu a:active {
+            background: #0b7285;
         }
         /* panel */
 
@@ -165,6 +172,10 @@
                     <a href="#" aria-expanded="false" aria-disabled="true" id="menuToggle">
                         <span class="fa fa-arrow-right fa-lg"></span>
                     </a>
+                    <a href="#">
+                        <span class="fa fa-fw fa-github fa-lg"></span>
+                        <span>Item</span>
+                    </a>
                     <li>
                         <a class="has-arrow" href="#">
                             <span class="fa fa-fw fa-github fa-lg"></span>
@@ -208,7 +219,7 @@
                             </li>
                         </ul>
                     </li>
-                    <li id="removable">
+                    <li>
                         <a class="has-arrow" href="#" aria-expanded="false">
                             <span class="fa fa-fw fa-github fa-lg"></span>
                             <span>Menu 1</span>
@@ -343,33 +354,61 @@
 
         $.panel.initialize();
 
-        $('#menu1').metisMenu();
-        collapse();
+        $('#menu1').metisMenu()
+            .on('show.metisMenu', function (event) {
+
+                // do something…
+
+            }).on('shown.metisMenu', function (event) {
+
+                // do something…
+
+            }).on('hide.metisMenu', function (event) {
+
+                // do something…
+
+            }).on('hidden.metisMenu', function (event) {
+
+                // do something…
+
+            });
 
         $("#menuToggle").toggle(expand, collapse);
+        collapse();
+
+        function delay(fn, predicate) {
+            if (predicate()) {
+                fn();
+            } else {
+                setTimeout(function () {
+                    delay(fn, predicate);
+                }, 0);
+            }
+        }
 
         function expand() {
             $(".layout").css({
-                "grid-template-columns": "200px 1fr"
+                "grid-template-columns": "250px 1fr"
             });
-            $("#menuToggle span").removeClass("fa-arrow-right fa-arrow-left").addClass("fa-arrow-left").css({
-                "float": "right"
-            });
+            $("#menuToggle span").removeClass("fa-arrow-right fa-arrow-left").addClass("fa-arrow-left");
             $(".metismenu > li > a").addClass("has-arrow");
-            $(".metismenu > li > a > span:not(.fa)").show();
+            $(".metismenu > li > a > span:not(.fa), .metismenu > a > span:not(.fa)").show();
             $("#link1").attr('href', "mm-vertical.css");
         }
 
         function collapse() {
-            $(".layout").css({
-                "grid-template-columns": "50px 1fr"
+            $(".metismenu a[aria-expanded='true']").click();
+            delay(function () {
+                $(".layout").css({
+                    "grid-template-columns": "50px 1fr"
+                });
+                $("#menuToggle span").removeClass("fa-arrow-right fa-arrow-left").addClass("fa-arrow-right");
+                $(".metismenu > li > a").removeClass("has-arrow");
+                $(".metismenu > li > a > span:not(.fa), .metismenu > a > span:not(.fa)").hide();
+                $("#link1").attr('href', "mm-vertical-hover.css");
+            }, function () {
+                return $(".metismenu ul[aria-expanded='true']").length === 0;
             });
-            $("#menuToggle span").removeClass("fa-arrow-right fa-arrow-left").addClass("fa-arrow-right").css({
-                "float": "none"
-            });
-            $(".metismenu > li > a").removeClass("has-arrow");
-            $(".metismenu > li > a > span:not(.fa)").hide();
-            $("#link1").attr('href', "mm-vertical-hover.css");
         }
     </script>
 </body>
