@@ -10,7 +10,7 @@
         //console.log(message);
     }
 
-    var pluginName = "elementToInput2";
+    var pluginName = "elementToInput";
 
     var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
     var THOUSAND_SEPARATOR = Globalize.culture().numberFormat[","];
@@ -114,7 +114,7 @@
     function createInput($el, value) {
         var $input = $("<input type=\"text\" />");
         $input.val(value);
-        $input.addClass("element_to_input2");
+        $input.addClass("element_to_input");
         var data = $el.data(pluginName);
         if (data.excelStyle) {
             $input.css({
@@ -123,6 +123,7 @@
                 "box-shadow": "none",
                 "transition-property": "none",
                 "padding": 0,
+                "outline": 0,
                 "margin-bottom": 0,
                 "height": "100%",
                 "width": "100%"
