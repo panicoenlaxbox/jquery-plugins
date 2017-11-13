@@ -12,13 +12,15 @@
 </head>
 
 <body>
-    <h1>jQuery ElementToInput</h1>
+    <h1>jQuery elementToInput</h1>
     <h4><a href="../index.html">Home</a></h4>
     <input type="button" value="Create" id="btnCreate" />
     <input type="button" value="Destroy" id="btnDestroy" />
     <table id="table1">
         <tr>
-            <td data-type="decimal" data-binding-value="1234,56"></td>
+            <td data-binding-value="sergio"></td>
+            <td data-binding-value="-1"></td>            
+            <td data-binding-value="1234,56"></td>
             <td data-type="decimal" data-binding-value="1234,56"></td>
             <td></td>
         </tr>
@@ -227,11 +229,11 @@
         <li><a href="../lib/globalize.js">globalize.js</a></li>
         <li><a href="../lib/globalize.culture.es-ES.js">globalize.culture.es-ES.js</a></li>
         <li><a href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js">https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js</a></li>
-        <li><a href="../lib/dataset.js">dataset.js</a></li>
+        <li><a href="../lib/jquery.contributing.js">jquery.contributing.js</a></li>
     </ul>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="../lib/dataset.js"></script>
+    <script src="../lib/jquery.contributing.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
         crossorigin="anonymous"></script>
@@ -241,10 +243,10 @@
     <script src="../lib/globalize.js"></script>
     <script src="../lib/globalize.culture.es-ES.js"></script>
     <script src="../main.js"></script>
-    <script src="jquery.elementToInput.js"></script>
     <script>
         Globalize.culture('es-ES');
-    </script>
+    </script>    
+    <script src="jquery.elementToInput.js"></script>
     <script>
         var options = $.extend(true, {}, $.fn.elementToInput.defaults);
         delete options.events;
@@ -274,8 +276,7 @@
             options.siblings = $cells;
             options.events = {
                 onChanged: function ($el, data) {                    
-                    console.log(data);
-                    console.log($el.data());
+                    console.log(data, $el.data());
 
                 }
             };

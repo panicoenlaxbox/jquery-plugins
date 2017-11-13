@@ -10,15 +10,13 @@
         //console.log(message);
     }
 
-    var pluginName = "elementToInput";
-
     var DECIMAL_SEPARATOR = Globalize.culture().numberFormat["."];
     var THOUSAND_SEPARATOR = Globalize.culture().numberFormat[","];
 
     var fakeRelatedTarget;
 
     function getNextElement($el, next) {
-        var data = $el.data(pluginName);
+        var data = $el.data("elementToInput");
         if (!data.siblings) {
             return null;
         }
@@ -52,10 +50,6 @@
         }
         var regex = new RegExp("\\" + THOUSAND_SEPARATOR, "g");
         return value.replace(regex, "");
-    }
-
-    function event(type) {
-        return type + "." + pluginName;
     }
 
     function parseText(text, type) {
@@ -115,7 +109,7 @@
         var $input = $("<input type=\"text\" />");
         $input.val(value);
         $input.addClass("element_to_input");
-        var data = $el.data(pluginName);
+        var data = $el.data("elementToInput");
         if (data.excelStyle) {
             $input.css({
                 "border-width": 0,
@@ -138,15 +132,15 @@
         return $input;
     }
 
-    function setValue($el, key, value, options) {
-        var data = $el.data(pluginName);
+    function setValue($el, key, value, previousKey, attr) {
+        var data = $el.data("elementToInput");
         options = options || {};
-        if (options.previousKey) {
-            data[options.previousKey] = data[key];
+        if (previousKey) {
+            data[previousKey] = data[key];
         }
         data[key] = value;
-        if (options.attrKey) {
-            $el.attr("data-" + options.attrKey, value);
+        if (attr) {
+            $el.attr("data-" + attr, value);
         }
     }
 
@@ -245,24 +239,24 @@
 
     function click() {
         var $parent = $(this);
-        var data = $parent.data(pluginName);
+        var data = $parent.data("elementToInput");
+        data._previousText = data.text;
         var text = data.text;
         if (data.isValid) {
-            // edit with format
             if (data.type === "percentage") {
-                text = formatValue(data.value ? data.value * 100 : 0, "decimal", data.savedDecimals, false);
+                text = formatValue(data.value ? data.value * 100 : 0, "decimal", data.savedDecimals, !data.editFormatted);
             } else if (isNumericType(data.type)) {
-                text = formatValue(data.value, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, false);
+                text = formatValue(data.value, isDecimalType(data.type) ? "decimal" : "int", data.savedDecimals, !data.editFormatted);
             }
         }
         var $input = createInput($parent, text);
-        $input.on(event("click"), function (e) {
+        $input.on("click.elementToInput", function (e) {
             editing($parent, true, data.closestSelector);
             e.stopPropagation();
         });
-        $input.on(event("keydown"), keydown);
-        $input.on(event("keyup"), keyup);
-        $input.on(event("blur"), blur);
+        $input.on("keydown.elementToInput", keydown);
+        $input.on("keyup.elementToInput", keyup);
+        $input.on("blur.elementToInput", blur);
         $parent.empty();
         $parent.append($input);
         $input.select();
@@ -283,7 +277,7 @@
         var isArrow = isUpArrow || isRightArrow || isDownArrow || isLeftArrow;
         var $input = $(this);
         var $parent = $input.parent();
-        var data = $parent.data(pluginName);
+        var data = $parent.data("elementToInput");
         if (data.readonly && !(isEsc || isTab || isEnter || isArrow)) {
             e.preventDefault();
             return;
@@ -291,7 +285,7 @@
         if (isEsc || isTab || isEnter || isUpArrow || isDownArrow) {
             e.preventDefault();
             if (isEsc) {
-                setValue($parent, "esc", true);
+                setValue($parent, "_esc", true);
             }
             var nextElement;
             if (!isEsc) {
@@ -326,7 +320,7 @@
 
     function keyup() {
         var $input = $(this);
-        var data = $input.parent().data(pluginName);
+        var data = $input.parent().data("elementToInput");
         var currentValue = $input.val();
         if (
             data.readonly ||
@@ -389,23 +383,19 @@
     function blur(e) {
         var $input = $(this);
         var $parent = $input.parent();
-        var data = $parent.data(pluginName);
-        var cancel = data.readonly || data.esc;
+        var data = $parent.data("elementToInput");
+        var text = $.trim($input.val());
+        var cancel = data.readonly || data._esc;        
         if (cancel) {
-            editing($parent, false, data.closestSelector);
-            invalid($parent, !data.isValid, data.closestSelector);
-            $input.remove();
-            $parent.text(data.previousText);
-            delete data.esc;
-            (data.events.onBlur || $.noop)(e, $parent);
-            return;
+            text = data._previousText;
         }
         $input.remove();
-        var changeTextResult = changeText($parent, $.trim($input.val()));
+        var changeTextResult = changeText($parent, text);
         if (changeTextResult.hasChanged) {
             (data.events.onChanged || $.noop)($parent, changeTextResult.result);
         }
-        delete data.esc;
+        delete data._esc;
+        delete data._previousText;
         if (fakeRelatedTarget) {
             e.relatedTarget = fakeRelatedTarget;
             fakeRelatedTarget = null;
@@ -414,7 +404,7 @@
     }
 
     function changeText($parent, text) {
-        var data = $parent.data(pluginName);
+        var data = $parent.data("elementToInput");
         var value;
         var bindingValue;
         var isValid = validate(text, {
@@ -424,9 +414,7 @@
             allowNegative: data.allowNegative,
             required: data.required
         });
-        setValue($parent, "isValid", isValid, {
-            attrKey: "is-valid"
-        });
+        setValue($parent, "isValid", isValid, null, "is-valid");
         if (isValid) {
             if (isNumericType(data.type)) {
                 var numericValues = getNumericValues(text, {
@@ -444,21 +432,11 @@
             value = null;
             bindingValue = "";
         }
-        setValue($parent, "value", value, {
-            attrKey: "value",
-            previousKey: "previousValue"
-        });
-        setValue($parent, "bindingValue", bindingValue, {
-            attrKey: "binding-value",
-            previousKey: "previousBindingValue"
-        });
-        setValue($parent, "text", text, {
-            previousKey: "previousText"
-        });
+        setValue($parent, "value", value, "previousValue", "value");
+        setValue($parent, "bindingValue", bindingValue, "previousBindingValue", "binding-value");
+        setValue($parent, "text", text, "previousText");
         var isDirty = data.originalText !== text;
-        setValue($parent, "isDirty", isDirty, {
-            attrKey: "is-dirty"
-        });
+        setValue($parent, "isDirty", isDirty, null, "is-dirty");
         editing($parent, false, data.closestSelector);
         invalid($parent, !data.isValid, data.closestSelector);
         $parent.text(text);
@@ -487,15 +465,13 @@
     }
 
     function initialize($el) {
-        var data = $el.data(pluginName);
+        var data = $el.data("elementToInput");
         if (!("bindingValue" in data) || data.bindingValue === undefined) {
             data.bindingValue = "";
         } else {
             data.bindingValue = data.bindingValue.toString();
         }
-        setValue($el, "isDirty", false, {
-            attrKey: "is-dirty"
-        });
+        setValue($el, "isDirty", false, null, "is-dirty");
         var isValid = validate(data.bindingValue, {
             type: data.type,
             min: data.min,
@@ -503,9 +479,7 @@
             allowNegative: data.allowNegative,
             required: data.required
         });
-        setValue($el, "isValid", isValid, {
-            attrKey: "is-valid"
-        });
+        setValue($el, "isValid", isValid, null, "is-valid");
         invalid($el, !data.isValid, data.closestSelector);
         if (!data.isValid) {
             $el.removeAttr("data-binding-value");
@@ -552,10 +526,10 @@
         init: function (options) {
             return this.each(function () {
                 var $this = $(this);
-                if (!$this.data(pluginName)) {
-                    var dataSet = parseDataSet($this.data());
-                    var data = $.extend(true, {}, $.fn[pluginName].defaults, dataSet, options);
-                    data._originalDataSet = JSON.stringify(dataSet);
+                if (!$this.data("elementToInput")) {
+                    var dataset = $.dataset.parse($this.data());
+                    var data = $.extend(true, {}, $.fn.elementToInput.defaults, dataset, options);
+                    data._originalDataset = JSON.stringify(dataset);
                     if (data.siblings && !(data.siblings instanceof jQuery)) {
                         data.siblings = $(data.siblings);
                     }
@@ -564,39 +538,39 @@
                     } else {
                         data.bindingValue = data.bindingValue.toString();
                     }
-                    $this.data(pluginName, data);
+                    $this.data("elementToInput", data);
                     initialize($this);
-                    $this.on(event("click"), click);
+                    $this.on("click.elementToInput", click);
                 }
             });
         },
         destroy: function () {
             return this.each(function () {
                 var $this = $(this);
-                var data = $this.data(pluginName);
+                var data = $this.data("elementToInput");
                 if (data) {
                     $this.empty();
                     $this.removeClass("editing");
                     $this.removeClass("invalid");
-                    $this.removeData(pluginName);
-                    restoreDataSet($this[0], JSON.parse(data._originalDataSet));
-                    $this.off("." + pluginName);
+                    $this.removeData("elementToInput");
+                    $.dataset.restore($this[0], JSON.parse(data._originalDataset));
+                    $this.off(".elementToInput");
                 }
             });
         }
     };
 
-    $.fn[pluginName] = function (method) {
+    $.fn.elementToInput = function (method) {
         if (methods[method]) {
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof method === "object" || !method) {
             return methods.init.apply(this, arguments);
         } else {
-            $.error("Method " + method + " does not exist on jQuery." + pluginName);
+            $.error("Method " + method + " does not exist on jQuery.elementToInput");
         }
     };
 
-    $.fn[pluginName].defaults = {
+    $.fn.elementToInput.defaults = {
         min: null,
         max: null,
         type: "int", //int, decimal, percentage, currency, string
@@ -620,32 +594,27 @@
         cyclicTabulation: true
     };
 
-    var extend = {};
-    extend[pluginName] = (function () {
-        return {
-            setBindingValue: function ($parent, bindingValue) {
-                changeText($parent, bindingValue);
-            },
-            setDirty: function ($parent, isDirty) {
-                setValue($parent,
-                    "isDirty",
-                    isDirty,
-                    {
-                        attrKey: "is-dirty"
-                    });
-            },
-            getValues: function ($el) {
-                if ($el[0].tagName.toUpperCase() === "INPUT") {
-                    $el = $input.parent();
-                }
-                var data = $el.data(pluginName);
-                return {
-                    value: data.value,
-                    bindingValue: data.bindingValue,
-                    text: data.text
+    $.extend({
+        elementToInput: (function () {
+            return {
+                setBindingValue: function ($parent, bindingValue) {
+                    changeText($parent, bindingValue);
+                },
+                setDirty: function ($parent, isDirty) {
+                    setValue($parent, "isDirty", isDirty, null, "is-dirty");
+                },
+                getValues: function ($el) {
+                    if ($el[0].tagName.toUpperCase() === "INPUT") {
+                        $el = $input.parent();
+                    }
+                    var data = $el.data("elementToInput");
+                    return {
+                        value: data.value,
+                        bindingValue: data.bindingValue,
+                        text: data.text
+                    }
                 }
             }
-        }
+        })()
     });
-    $.extend(extend);
 })(jQuery);

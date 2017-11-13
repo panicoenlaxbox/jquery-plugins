@@ -6,25 +6,26 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>jQuery Plugins</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
-    crossorigin="anonymous">
-    <link rel="stylesheet" href="../style/main.css">    
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="../style/main.css">
     <link rel="stylesheet" href="main.css">
 </head>
 
 <body>
-    <h1>jQuery Panel</h1>
+    <h1>jQuery slidingPanel</h1>
     <h4>
         <a href="../index.html">Home</a>
     </h4>
-    <input type="button" value="Open" id="btnTrigger1" data-panel="#panel1" />
-    <input type="button" value="Open child" id="btnOpenChild" />
+    <input type="button" value="Open" id="btnTrigger1" data-sliding-panel="#slidingPanel1" />
+    <input type="button" value="Create" id="btnCreate" />
     <input type="button" value="Destroy" id="btnDestroy" />
-    <div id="panel1" style="display: none;">
+    <div id="slidingPanel1" style="display: none;">
         <div>
             <input type="button" data-role="close" value="Close" />
         </div>
         <div>
-            <input type="button" value="Open" id="btnTrigger2" data-panel="#panel2" data-parent-trigger="#btnTrigger1" />
+            <input type="button" value="Open" id="btnTrigger2" data-sliding-panel="#slidingPanel2" data-parent-trigger="#btnTrigger1"
+            />
             <!--data-overlay--modal="true"-->
             <h1>Sergio</h1>
             <h1>Sergio</h1>
@@ -68,7 +69,7 @@
             <h1>Sergio</h1>
         </div>
     </div>
-    <div id="panel2" style="display: none;">
+    <div id="slidingPanel2" style="display: none;">
         <div>
             <input type="button" data-role="close" value="Close" />
         </div>
@@ -121,10 +122,9 @@
             <tr>
                 <td>
                     destroyOnClose
-                    <div class="hint">By default false, true for this playground</div>
                 </td>
                 <td>
-                    <input type="checkbox" v-model="options.destroyOnClose" disabled="disabled">
+                    <input type="checkbox" v-model="options.destroyOnClose">
                 </td>
             </tr>
             <tr>
@@ -201,6 +201,14 @@
                 </td>
             </tr>
             <tr>
+                <td>overlay.active
+                    <div class="hint">true if overlay.modal == true</div>
+                </td>
+                <td>
+                    <input type="checkbox" v-model="options.overlay.active">
+                </td>
+            </tr>
+            <tr>
                 <td>overlay.modal</td>
                 <td>
                     <input type="checkbox" v-model="options.overlay.modal">
@@ -225,17 +233,19 @@
                 </td>
             </tr>
             <tr>
-                <td>overlay.top
+                <td>overlay.offset.top
                     <div class="hint">0 if overlay.modal == true</div>
                 </td>
                 <td>
-                    <input type="checkbox" v-model="options.overlay.top">
+                    <input type="checkbox" v-model="options.overlay.offset.top">
                 </td>
             </tr>
             <tr>
-                <td>offset.left</td>
+                <td>overlay.offset.left
+                    <div class="hint">0 if overlay.modal == true</div>
+                </td>
                 <td>
-                    <input type="text" v-model.number="options.offset.left">
+                    <input type="text" v-model.number="options.overlay.offset.left">
                 </td>
             </tr>
             <tr>
@@ -388,42 +398,42 @@
     <h3>Events</h3>
     <pre>        
     events: {
-        onAjaxDone: function (trigger, panel, el, data, textStatus, jqXHR) {},
-        onAjaxFail: function (trigger, panel, jqXHR, textStatus, errorThrown) {},
-        onBeforeClose: function (trigger, panel) {
+        onAjaxDone: function (trigger, slidingPanel, el, data, textStatus, jqXHR) {},
+        onAjaxFail: function (trigger, slidingPanel, jqXHR, textStatus, errorThrown) {},
+        onBeforeClose: function (trigger, slidingPanel) {
             //return false for cancelling
         },
-        onBeforeOpen: function (trigger, panel, parentPanel) {
+        onBeforeOpen: function (trigger, slidingPanel, slidingParentPanel) {
             //return false for cancelling
         },
-        onClose: function (trigger, panel, parentPanel) {},
-        onOpen: function (trigger, panel) {}
+        onClose: function (trigger, slidingPanel, slidingParentPanel) {},
+        onOpen: function (trigger, slidingPanel) {}
     },        
     </pre>
     <h3>Methods</h3>
     <table>
         <tr>
-            <td>Create panel</td>
+            <td>Create slidingPanel</td>
             <td>
-                <pre>$trigger.panel($panel[, options]);</pre>
+                <pre>$trigger.slidingPanel($slidingPanel[, options]);</pre>
             </td>
         </tr>
         <tr>
-            <td>Open panel</td>
+            <td>Open slidingPanel</td>
             <td>
-                <pre>$trigger.panel("open");</pre>
+                <pre>$trigger.slidingPanel("open");</pre>
             </td>
         </tr>
         <tr>
-            <td>Close panel</td>
+            <td>Close slidingPanel</td>
             <td>
-                <pre>$trigger.panel("close");</pre>
+                <pre>$trigger.slidingPanel("close");</pre>
             </td>
         </tr>
         <tr>
-            <td>Destroy panel</td>
+            <td>Destroy slidingPanel</td>
             <td>
-                <pre>$trigger.panel("destroy");</pre>
+                <pre>$trigger.slidingPanel("destroy");</pre>
             </td>
     </table>
     <h3>Dependencies</h3>
@@ -441,15 +451,15 @@
             <a href="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js">https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js</a>
         </li>
         <li>
-            <a href="../lib/dataset.js">dataset.js</a>
+            <a href="../lib/jquery.contributing.js">jquery.contributing.js</a>
         </li>
     </ul>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="../lib/jquery.blockUI.js"></script>
-    <script src="../lib/dataset.js"></script>
-    <script src="jquery.panel.js"></script>
+    <script src="../lib/jquery.contributing.js"></script>
+    <script src="jquery.slidingPanel.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
         crossorigin="anonymous"></script>
@@ -459,11 +469,10 @@
     <script src="../main.js"></script>
 
     <script>
-        var options = $.extend(true, {}, $.fn.panel.defaults);
-        delete options.panel;
+        var options = $.extend(true, {}, $.fn.slidingPanel.defaults);
+        delete options.slidingPanel;
         delete options.parentTrigger;
         delete options.events;
-        options.destroyOnClose = true;
 
         var app = new Vue({
             el: '#app',
@@ -478,47 +487,48 @@
 
         function dumpOptions() {
             var options = $.extend(true, {}, app.options);
-            keepOnlyChangesInObject(options, $.fn.panel.defaults);
+            keepOnlyChangesInObject(options, $.fn.slidingPanel.defaults);
             removeEmptyObjects(options);
             $("#options").html(JSON.stringify(options, null, "\t"));
         }
 
-
-        $("#btnTrigger1").on("click", function (e) {
-            var $trigger = $(this);
-            var options = getOptions();
+        function attachEvents(options) {
             options.events = {
-                onOpen: function (trigger, panel) {
-                    $("#btnTrigger2").panel();
+                onBeforeClose: function (trigger, slidingPanel) {
+                    console.log('onBeforeClose', trigger);
                 },
-                onClose: function () {
-                    //setTimeout(function() {
-                    //    $("#btnTrigger1").panel("destroy");
-                    //}, 0);
+                onBeforeOpen: function (trigger, slidingPanel, slidingParentPanel) {
+                    console.log('onBeforeOpen', trigger);
+                },
+                onOpen: function (trigger, slidingPanel) {
+                    console.log('onOpen', trigger);
+                },
+                onClose: function (trigger, slidingPanel, slidingParentPanel) {
+                    console.log('onClose', trigger);
                 }
             };
-            $trigger.panel(options);
-            $trigger.panel("open");
-            dumpOptions();
-        });
+        }
 
-        $("#btnOpenChild").on("click", function (e) {
+        $("#btnCreate").on("click", function (e) {
+            $("#btnDestroy").click();    
             var $trigger1 = $("#btnTrigger1");
             var options = getOptions();
-            $trigger1.panel(options);
-            var $trigger2 = $("#btnTrigger2");
-            $trigger2.panel({
-                fullScreenHeight: {
-                    active: true
-                }
-            });
-            $trigger2.panel("open");
+            attachEvents(options);
+            options.events.onOpen = function (trigger, slidingPanel) {
+                console.log('onOpen', trigger);
+                var options = {};
+                attachEvents(options);
+                $("#btnTrigger2").slidingPanel(options);
+            };
+            $trigger1.slidingPanel(options);
             dumpOptions();
         });
 
         $("#btnDestroy").on("click", function (e) {
-            var $trigger = $("#btnTrigger1");
-            $trigger.panel("destroy");
+            var $trigger1 = $("#btnTrigger1");
+            $trigger1.slidingPanel("destroy");
+            var $trigger2 = $("#btnTrigger2");
+            $trigger2.slidingPanel("destroy");            
         });
     </script>
 </body>

@@ -1,11 +1,11 @@
-#panel1 {
+#slidingPanel1 {
     background-color: red;
     height: 75%;
     width: 75%; 
     overflow: auto;
 }
 
-#panel2 {
+#slidingPanel2 {
     background-color: yellow;
     height: 250px;
     width: 500px;

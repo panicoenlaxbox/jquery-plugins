@@ -6,21 +6,20 @@
 (function ($) {
     "use strict";
 
-    var pluginName = "panel";
-    var pluginKey = "_" + pluginName;
-
     var openedTriggers = [];
 
-    $(document).on("click." + pluginName, function (e) {
+    $(document).on("click.slidingPanel", function (e) {
         if (openedTriggers.length === 0 || !$.contains(document, e.target)) {
             return;
         }
-        var currentOpenedTrigger = openedTriggers[openedTriggers.length - 1];
-        var data = $(currentOpenedTrigger).data(pluginKey);
-        var hasClickedCurrentOpenedTriggerOverlay = $(e.target).is(data._overlay);
-        var isCurrentOpenedTriggerModal = data.overlay.modal;
-        if (hasClickedCurrentOpenedTriggerOverlay && !isCurrentOpenedTriggerModal) {
-            close.call(currentOpenedTrigger);
+        var trigger = openedTriggers[openedTriggers.length - 1];
+        var data = $(trigger).data("_slidingPanel");
+        if (data.overlay.modal || data.slidingPanel === e.target) {
+            return;
+        }
+        if ((data._overlay && $(e.target).is(data._overlay)) || !$.contains(data.slidingPanel, e.target)) {
+            close.call(trigger);
+            return;
         }
     });
 
@@ -86,7 +85,7 @@
     }
 
     function openedPanel($trigger) {
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data("_slidingPanel");
         data._opened = true;
         var trigger = $trigger[0];
         if (!data._parentTrigger) {
@@ -94,19 +93,19 @@
         } else {
             openedTriggers.push(trigger);
         }
-        (data.events.onOpen || $.noop)(trigger, data.panel);
+        (data.events.onOpen || $.noop)(trigger, data.slidingPanel);
         var cancelIfSelectorExists = data.ajax.cancelIfSelectorExists;
-        var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.panel).length === 0));
+        var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.slidingPanel).length === 0));
         if (loadUrl) {
-            var el = getFoundSelectorOrParentElement(data.panel, data.ajax.appendToSelector);
+            var el = getFoundSelectorOrParentElement(data.slidingPanel, data.ajax.appendToSelector);
             if (data.ajax.emptyBeforeLoad) {
                 $(el).empty();
             }
             $(el).block();
             load(el, data.ajax.url).done(function (_data, textStatus, jqXHR) {
-                (data.events.onAjaxDone || $.noop)(trigger, data.panel, el, _data, textStatus, jqXHR);
+                (data.events.onAjaxDone || $.noop)(trigger, data.slidingPanel, el, _data, textStatus, jqXHR);
             }).fail(function (jqXHR, textStatus, errorThrown) {
-                (data.events.onAjaxFail || $.noop)(trigger, data.panel, jqXHR, textStatus, errorThrown);
+                (data.events.onAjaxFail || $.noop)(trigger, data.slidingPanel, jqXHR, textStatus, errorThrown);
             }).always(function () {
                 $(el).unblock();
             });
@@ -146,17 +145,17 @@
         });
     }
 
-    function createOverlay($panel, opacity, top) {
-        var $trigger = $($panel.data(pluginKey).trigger);
-        var data = $trigger.data(pluginKey);
-        var zIndex = parseInt($panel.css("z-index")) - 1;
+    function createOverlay($slidingPanel, opacity, offset) {
+        var $trigger = $($slidingPanel.data("_slidingPanel").trigger);
+        var data = $trigger.data("_slidingPanel");
+        var zIndex = parseInt($slidingPanel.css("z-index")) - 1;
         return $("<div />", {
-            "data-role": pluginName + "-overlay",
+            "data-role": "sliding-panel-overlay",
             css: {
                 "position": "fixed",
-                "top": top,
+                "top": offset.top,
                 "right": 0,
-                "left": 0,
+                "left": offset.left,
                 "bottom": 0,
                 "opacity": opacity,
                 "background-color": data.overlay.style.backgroundColor,
@@ -168,7 +167,7 @@
     function open(e, animation) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data("_slidingPanel");
         if (data._opened) {
             return true;
         }
@@ -179,27 +178,27 @@
             if (open.call(data._parentTrigger, e, false) === false)
                 return false;
         }
-        if ((data.events.onBeforeOpen || $.noop)(this, data.panel, data._parentPanel) === false) {
+        if ((data.events.onBeforeOpen || $.noop)(this, data.slidingPanel, data._slidingParentPanel) === false) {
             return false;
         }
-        $trigger.addClass(pluginName + "-trigger-opened");
-        var $panel = $(data.panel);
-        $panel.addClass(pluginName + "-opened");
+        $trigger.addClass("sliding-panel-trigger-opened");
+        var $slidingPanel = $(data.slidingPanel);
+        $slidingPanel.addClass("sliding-panel-opened");
         var zIndex;
-        if (data._parentPanel) {
-            zIndex = parseInt($(data._parentPanel).css("z-index"), 10) + 1;
+        if (data._slidingParentPanel) {
+            zIndex = parseInt($(data._slidingParentPanel).css("z-index"), 10) + 1;
         } else {
             zIndex = data.zIndex;
         }
-        $panel.css("z-index", zIndex).show();
+        $slidingPanel.css("z-index", zIndex).show();
         if (data._positioning) {
-            positioning($panel, data.position, data.offset);
+            positioning($slidingPanel, data.position, data.offset);
             if (data.fullScreenHeight.active) {
                 var height = "100%";
                 if (data.fullScreenHeight.top) {
                     height = "calc(100% - " + data.fullScreenHeight.top + ")";
                 }
-                $panel.css({
+                $slidingPanel.css({
                     "top": data.fullScreenHeight.top,
                     "height": height
                 });
@@ -210,15 +209,20 @@
             $("body").css("overflow", "hidden");
         }
         var opacity = data.overlay.style.opacity;
-        if (data.overlay.transparentOpacityIfNotFirst && $("[data-role='" + pluginName + "-overlay']:visible").length > 0) {
+        if (data.overlay.transparentOpacityIfNotFirst && $("[data-role='sliding-panel-overlay']:visible").length > 0) {
             opacity = 0;
         }
-        var $overlay = createOverlay($panel, opacity, data.overlay.top);
-        $("body").append($overlay);
-        data._overlay = $overlay[0];
+        if (data.overlay.active) {
+            var $overlay = createOverlay($slidingPanel, opacity, {
+                top: data.overlay.offset.top,
+                left: data.overlay.offset.left
+            });
+            $("body").append($overlay);
+            data._overlay = $overlay[0];
+        }
         animation = animation === undefined ? data.animation.active : animation;
         if (animation) {
-            $panel.hide().show("slide", {
+            $slidingPanel.hide().show("slide", {
                 direction: data.animation.direction
             }, data.animation.duration, function () {
                 openedPanel($trigger);
@@ -232,7 +236,7 @@
     function close(e) {
         // this DOM element
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data("_slidingPanel");
         if (!data._opened) {
             return true;
         }
@@ -243,21 +247,23 @@
                 }
             }
         }
-        if ((data.events.onBeforeClose || $.noop)(this, data.panel) === false) {
+        if ((data.events.onBeforeClose || $.noop)(this, data.slidingPanel) === false) {
             return false;
         }
-        $trigger.removeClass(pluginName + "-trigger-opened");
-        $(data._overlay).remove();
-        delete data._overlay;
-        var $panel = $(data.panel);
-        $panel.removeClass(pluginName + "-opened").hide();
+        $trigger.removeClass("sliding-panel-trigger-opened");
+        if (data._overlay) {
+            $(data._overlay).remove();
+            delete data._overlay;
+        }
+        var $slidingPanel = $(data.slidingPanel);
+        $slidingPanel.removeClass("sliding-panel-opened").hide();
         data._opened = false;
         openedTriggers.pop();
         if (data._original.bodyOverflow) {
             $("body").css("overflow", data._original.bodyOverflow);
         }
         if (data.events.onClose) {
-            data.events.onClose(this, data.panel, data._parentPanel);
+            data.events.onClose(this, data.slidingPanel, data._slidingParentPanel);
         }
         if (data.destroyOnClose) {
             destroy.call(this);
@@ -267,7 +273,7 @@
 
     function destroy() {
         var $trigger = $(this);
-        var data = $trigger.data(pluginKey);
+        var data = $trigger.data("_slidingPanel");
         if (data) {
             if (data._opened) {
                 close.call(this);
@@ -278,19 +284,19 @@
                 }
             }
             if (data._parentTrigger) {
-                var _parentChildTriggers = $(data._parentTrigger).data(pluginKey)._childTriggers;
+                var _parentChildTriggers = $(data._parentTrigger).data("_slidingPanel")._childTriggers;
                 var index = $.inArray(this, _parentChildTriggers);
                 _parentChildTriggers.splice(index, 1);
             }
-            var $panel = $(data.panel);
-            setOrRemoveAttr($panel, "style", data._original.panel.style);
-            setOrRemoveAttr($panel, "class", data._original.panel.class);
-            $panel.removeData(pluginKey);
-            $panel.off("." + pluginName);
+            var $slidingPanel = $(data.slidingPanel);
+            setOrRemoveAttr($slidingPanel, "style", data._original.slidingPanel.style);
+            setOrRemoveAttr($slidingPanel, "class", data._original.slidingPanel.class);
+            $slidingPanel.removeData("_slidingPanel");
+            $slidingPanel.off(".slidingPanel");
             setOrRemoveAttr($trigger, "style", data._original.trigger.style);
             setOrRemoveAttr($trigger, "class", data._original.trigger.class);
-            $trigger.removeData(pluginKey);
-            $trigger.off("." + pluginName);
+            $trigger.removeData("_slidingPanel");
+            $trigger.off(".slidingPanel");
         }
     }
 
@@ -300,8 +306,8 @@
             return this.each(function () {
                 // this DOM element
                 var $trigger = $(this);
-                var settings = $.extend(true, {}, $.fn.panel.defaults, parseDataSet($trigger.data()), options);
-                if (!$trigger.data(pluginKey)) {
+                var settings = $.extend(true, {}, $.fn.slidingPanel.defaults, $.dataset.parse($trigger.data()), options);
+                if (!$trigger.data("_slidingPanel")) {
                     if (!settings.position.of) {
                         settings.position.of = this;
                     } else if (typeof settings.position.of === "function") {
@@ -311,19 +317,19 @@
                     } else {
                         settings.position.of = getDomElement(settings.position.of);
                     }
-                    if (typeof (settings.panel) === "string") {
-                        settings.panel = $(settings.panel);
+                    if (typeof (settings.slidingPanel) === "string") {
+                        settings.slidingPanel = $(settings.slidingPanel);
                     }
-                    settings.panel = getDomElement(settings.panel);
-                    var $panel = $(settings.panel);
+                    settings.slidingPanel = getDomElement(settings.slidingPanel);
+                    var $slidingPanel = $(settings.slidingPanel);
                     if (typeof (settings.parentTrigger) === "string") {
                         settings.parentTrigger = $(settings.parentTrigger);
                     }
                     if (settings.parentTrigger) {
                         var $parentTrigger = getjQueryElement(settings.parentTrigger);
                         settings._parentTrigger = $parentTrigger[0];
-                        var parentTriggerData = $parentTrigger.data(pluginKey);
-                        settings._parentPanel = parentTriggerData.panel;
+                        var parentTriggerData = $parentTrigger.data("_slidingPanel");
+                        settings._slidingParentPanel = parentTriggerData.slidingPanel;
                         if (!parentTriggerData._childTriggers) {
                             parentTriggerData._childTriggers = [];
                         }
@@ -334,12 +340,12 @@
                             class: $trigger.attr("class"),
                             style: $trigger.attr("style"),
                         },
-                        panel: {
-                            class: $panel.attr("class"),
-                            style: $panel.attr("style")
+                        slidingPanel: {
+                            class: $slidingPanel.attr("class"),
+                            style: $slidingPanel.attr("style")
                         }
                     };
-                    $trigger.addClass(pluginName + "-trigger").on("click." + pluginName, function (e) {
+                    $trigger.addClass("sliding-panel-trigger").on("click.slidingPanel", function (e) {
                         if (!settings._opened) {
                             open.call($trigger[0], e);
                         } else {
@@ -350,18 +356,18 @@
                     if (settings.fullScreen || settings.fullScreenHeight.active) {
                         settings.sticky = true;
                     }
-                    $panel.hide().addClass(pluginName).css({
+                    $slidingPanel.hide().addClass("sliding-panel").css({
                         "position": (settings.sticky ? "fixed" : "absolute")
                     });
                     if (settings.fullScreen) {
-                        $panel.css({
+                        $slidingPanel.css({
                             "top": "0",
                             "left": "0",
                             "width": "100%",
                             "height": "100%"
                         });
                     } else if (settings.centered) {
-                        $panel.css({
+                        $slidingPanel.css({
                             "top": "50%",
                             "left": "50%",
                             "transform": "translate(-50%, -50%)"
@@ -374,10 +380,12 @@
                         settings.removeBodyOverflow = true;
                     }
                     if (settings.overlay.modal) {
-                        settings.overlay.top = 0;
+                        settings.overlay.active = true;
+                        settings.overlay.offset.top = 0;
+                        settings.overlay.offset.left = 0;
                     }
                     settings._positioning = !settings.fullScreen && !settings.centered;
-                    $panel.on("click." + pluginName, function (e) {
+                    $slidingPanel.on("click.slidingPanel", function (e) {
                         if ($(e.target).is(settings.closeSelector)) {
                             close.call($trigger[0], e);
                             e.stopPropagation();
@@ -392,8 +400,8 @@
                             }
                         }
                     });
-                    $trigger.data(pluginKey, settings);
-                    $panel.data(pluginKey, {
+                    $trigger.data("_slidingPanel", settings);
+                    $slidingPanel.data("_slidingPanel", {
                         trigger: this
                     });
                 }
@@ -415,17 +423,17 @@
         }
     };
 
-    $.fn.panel = function (method) {
+    $.fn.slidingPanel = function (method) {
         if (methods[method]) {
             return methods[method].apply(this, Array.prototype.slice.call(arguments, 1));
         } else if (typeof method === "object" || !method) {
             return methods.init.apply(this, arguments);
         } else {
-            $.error("Method " + method + " does not exist on jQuery." + pluginName);
+            $.error("Method " + method + " does not exist on jQuery.slidingPanel");
         }
     };
 
-    $.fn.panel.defaults = {
+    $.fn.slidingPanel.defaults = {
         destroyOnClose: false,
         animation: {
             active: true,
@@ -448,8 +456,12 @@
             onOpen: null
         },
         overlay: {
+            active: false,
             modal: false,
-            top: 0,
+            offset: {
+                top: 0,
+                left: 0
+            },
             transparentOpacityIfNotFirst: true,
             style: {
                 backgroundColor: "#000",
@@ -460,7 +472,7 @@
             left: 0,
             top: 0
         },
-        panel: null,
+        slidingPanel: null,
         parentTrigger: null,
         position: {
             my: "left top", // default "center"
@@ -480,11 +492,10 @@
     };
 
     $.extend({
-        [pluginName]: (function () {
+        slidingPanel: (function () {
             return {
                 initialize: function () {
-                    // $.pluginName.initialize();
-                    $("[data-role='" + pluginName + "-trigger']").panel();
+                    $("[data-role='sliding-panel-trigger']").slidingPanel();
                 }
             }
         })()
