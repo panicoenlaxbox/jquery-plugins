@@ -134,7 +134,6 @@
 
     function setValue($el, key, value, previousKey, attr) {
         var data = $el.data("elementToInput");
-        options = options || {};
         if (previousKey) {
             data[previousKey] = data[key];
         }
