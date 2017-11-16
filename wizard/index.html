@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="../style/main.css">
+    <link rel="stylesheet" href="main.css">
+    <title>jQuery wizard</title>
+</head>
+
+<body>
+    <div id="wizard1">
+        <ul class="nav nav-pills nav-stacked">
+            <li class="active">
+                <a href="#home" role="tab" data-toggle="tab">Home</a>
+            </li>
+            <li>
+                <a href="#profile" role="tab" data-toggle="tab">Profile</a>
+            </li>
+            <li>
+                <a href="#messages" role="tab" data-toggle="tab">Messages</a>
+            </li>
+            <li>
+                <a href="#settings" role="tab" data-toggle="tab">Settings</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="home">home</div>
+            <div class="tab-pane" id="profile">profile</div>
+            <div class="tab-pane" id="messages">messages</div>
+            <div class="tab-pane" id="settings">settings</div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="../lib/jquery.blockUI.js"></script>
+    <script src="../lib/jquery.contributing.js"></script>
+    <script src="jquery.wizard.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@2.2.6"></script>
+    <script src="../main.js"></script>
+    <script>
+        function configureWizard() {
+            $("#wizard1").wizard({
+                modal: {
+                    active: true,
+                    width: "90%",
+                    title: "Título",
+                    backdrop: "static"
+                },
+                size: {
+                    tabContent: {
+                        height: "350px"
+                    }
+                }
+            });
+        }
+
+        $(function () {
+            configureWizard();
+            $("#wizard1").wizard("open");
+        });
+    </script>
+</body>
+
+</html>
