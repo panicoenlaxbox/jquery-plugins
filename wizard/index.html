@@ -67,11 +67,17 @@
                         deferred.resolve();
                         return deferred.promise();
                     },
-                    onAjaxDone: function (newStep, data, textStatus, jqXHR) {
-                        console.log("onAjaxDone", newStep, data, textStatus)
+                    onAjaxDone: function (step, data, textStatus, jqXHR) {
+                        console.log("onAjaxDone", step, data, textStatus)
                     },
-                    onAjaxFail: function (newStep, jqXHR, textStatus, errorThrown) {
-                        console.log("onAjaxDone", newStep, textStatus, errorThrown)
+                    onAjaxFail: function (step, jqXHR, textStatus, errorThrown) {
+                        console.log("onAjaxDone", step, textStatus, errorThrown)
+                    },
+                    onFinish: function () {
+                        console.log("onFinish");
+                    },
+                    onBeforeLoadUrl(step, url) {
+                        console.log("onBeforeLoadUrl", step, url);
                     }
                 }
             });

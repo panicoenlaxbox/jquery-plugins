@@ -98,7 +98,6 @@
         this.name = data.name;
         this.title = data.title;
         this.validate = data.validate === undefined ? false : data.validate;
-        this.url = data.url === undefined ? null : data.url;
         this.$tab = null;
         this.$content = null;
         this.index = 0;
@@ -194,9 +193,13 @@
 
                         var loadUrl = (newStep.ajax.url && !("_ignore_next_url" in newStep) && (newStep.$content.is(":empty") || (!newStep.$content.is(":empty") && newStep.ajax.checkSelector && !$(checkSelector, newStep.$content).exists())));
                         if (loadUrl) {
+                            var url = (settings.events.onBeforeLoadUrl || $.noop)(newStep, newStep.ajax.url);
+                            if (!url) {
+                                url = newStep.ajax.url;
+                            }
                             setTimeout(function () {
                                 $wizard.block();
-                                $.loadUrl(newStep.$content, newStep.ajax.url).done(function (data, textStatus, jqXHR) {
+                                $.loadUrl(newStep.$content, url).done(function (data, textStatus, jqXHR) {
                                     newStep._ignore_validation = true;
                                     newStep._ignore_next_url = true;
                                     newStep.$tab.tab("show");
@@ -240,10 +243,8 @@
             onValidate: null,
             onAjaxDone: null,
             onAjaxFail: null,
-            // onShow: null,
-            // onTabShow: null,
-            // onFinish: null,
-            // onBeforeLoadUrl: null
+            onFinish: null,
+            onBeforeLoadUrl: null
         },
         buttons: {
             previous: {
