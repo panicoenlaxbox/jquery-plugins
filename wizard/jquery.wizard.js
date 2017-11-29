@@ -1,6 +1,6 @@
 /*
  * jQuery Plugin 
- * Copyright 2015, Sergio León
+ * Copyright 2017, Sergio León
  * http://panicoenlaxbox.blogspot.com/
  */
 (function ($) {
@@ -87,10 +87,6 @@
         } else {
             $button.attr("disabled", "disabled");
         }
-    }
-
-    function disableButtons() {
-        setButtonsAvailability($wizard, false, false, false);
     }
 
     function Step(data) {
@@ -238,14 +234,6 @@
     };
 
     $.fn.wizard.defaults = {
-        title: null,
-        events: {
-            onValidate: null,
-            onAjaxDone: null,
-            onAjaxFail: null,
-            onFinish: null,
-            onBeforeLoadUrl: null
-        },
         buttons: {
             previous: {
                 text: "Anterior",
@@ -260,12 +248,19 @@
                 className: "btn-success"
             },
         },
-        steps: [],
+        events: {
+            onValidate: null,
+            onAjaxDone: null,
+            onAjaxFail: null,
+            onFinish: null,
+            onBeforeLoadUrl: null
+        },
         overlay: {
             style: {
                 backgroundColor: "#000",
                 opacity: 0.5
             }
-        }
+        },
+        title: null
     };
 })(jQuery);
