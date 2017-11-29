@@ -56,34 +56,6 @@
         return el;
     }
 
-    function load(el, url) {
-        var selector = "";
-        var i = url.indexOf(" ");
-        if (i !== -1) {
-            selector = url.substring(i + 1);
-            url = url.substring(0, i);
-        }
-        var deferred = $.Deferred();
-        $.ajax({
-            type: "GET",
-            url: url
-        }).done(function (data, textStatus, jqXHR) {
-            // http://api.jquery.com/jquery.parsehtml/
-            // keepScripts A Boolean indicating whether to include scripts passed in the HTML string
-            if (typeof (data) === "object") {
-                data = JSON.stringify(data);
-            }
-            var value = selector ? $("<div>").append($.parseHTML(data, true)).find(selector) : data;
-            $(el).html(value);
-            deferred.resolve(data, textStatus, jqXHR);
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            deferred.reject(jqXHR, textStatus, errorThrown);
-        }).always(function () {
-            deferred.always();
-        });
-        return deferred.promise();
-    }
-
     function openedPanel($trigger) {
         var data = $trigger.data("_slidingPanel");
         data._opened = true;
@@ -95,14 +67,14 @@
         }
         (data.events.onOpen || $.noop)(trigger, data.slidingPanel);
         var cancelIfSelectorExists = data.ajax.cancelIfSelectorExists;
-        var loadUrl = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.slidingPanel).length === 0));
-        if (loadUrl) {
+        var load = data.ajax.url && (!cancelIfSelectorExists || ($(cancelIfSelectorExists, data.slidingPanel).length === 0));
+        if (load) {
             var el = getFoundSelectorOrParentElement(data.slidingPanel, data.ajax.appendToSelector);
             if (data.ajax.emptyBeforeLoad) {
                 $(el).empty();
             }
             $(el).block();
-            load(el, data.ajax.url).done(function (_data, textStatus, jqXHR) {
+            $.loadUrl(el, data.ajax.url).done(function (_data, textStatus, jqXHR) {
                 (data.events.onAjaxDone || $.noop)(trigger, data.slidingPanel, el, _data, textStatus, jqXHR);
             }).fail(function (jqXHR, textStatus, errorThrown) {
                 (data.events.onAjaxFail || $.noop)(trigger, data.slidingPanel, jqXHR, textStatus, errorThrown);

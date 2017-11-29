@@ -1,92 +1,71 @@
-/* <div class="wizard">
-<div class="wizard__title">
-  <h1>Soy un título y además soy muy largo y tedioso</h1>
-</div>
-<div class="wizard__nav">
-<ul class="nav nav-pills nav-stacked">
-          <li class="active">
-              <a href="#home" role="tab" data-toggle="tab">Home</a>
-          </li>
-          <li>
-              <a href="#profile" role="tab" data-toggle="tab">Profile</a>
-          </li>
-          <li>
-              <a href="#messages" role="tab" data-toggle="tab">Messages</a>
-          </li>
-          <li>
-              <a href="#settings" role="tab" data-toggle="tab">Settings</a>
-          </li>
-      </ul>    
-</div>
-<div class="wizard__subtitle">
-  <h2>Soy un subtítulo</h2>
-</div>
-<div class="wizard__content">
-          <div class="tab-content">
-          <div class="tab-pane active" id="home">home</div>
-          <div class="tab-pane" id="profile">profile</div>
-          <div class="tab-pane" id="messages">messages</div>
-          <div class="tab-pane" id="settings">settings</div>
-      </div>
-</div>
-<div class="wizard__footer">
-  <input type="button" value="first">
-  <input type="button" value="second">
-</div>
-</div> */
-
 .wizard {
-    background-color: salmon;
-     height: 400px;
-     width: 500px;
-     display: grid;
-      grid-template-columns: 100px 1fr;
-     grid-template-rows: 50px 50px 1fr 50px;
-     grid-template-areas: "wizard__title wizard__title"
-       "wizard__nav wizard__subtitle"
-       "wizard__nav wizard__content"
-       "wizard__nav wizard__footer";
-   }
-   
-   .wizard__title {
-     background-color: skyblue;
-     grid-area: wizard__title;
-   }
-   
-   .wizard__title h1, .wizard__subtitle h2 {
-     margin: 0 10px;
-     line-height: 50px;
-     white-space: nowrap;
-     overflow: hidden;
-     text-overflow: ellipsis;  
-   }
-   
-   .wizard__nav {
-     background-color: red;
-     grid-area: wizard__nav;
-     padding: 10px;
-   }
-   
-   .wizard__subtitle {
-     background-color: blue;
-     grid-area: wizard__subtitle;
-   }
-   
-   .wizard__content {
-     background-color: olive;
-     grid-area: wizard__content;
-     padding: 10px;
-   }
-   
-   .wizard__footer {
-     background-color: yellow;
-     grid-area: wizard__footer;
-     display: flex;
-     justify-content: flex-end;
-     align-items: center;
-     padding-right: 10px;
-   }
-   
-   .wizard__footer input:not(:last-child) {
-     margin-right: 5px;
-   }
+  background-color: salmon;
+  height: 400px;
+  width: 500px;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  grid-template-rows: 50px 50px 1fr 50px;
+  grid-template-areas: "wizard__title wizard__title" "wizard__nav wizard__content" "wizard__nav wizard__content" "wizard__nav wizard__footer";
+}
+
+.wizard__title {
+  background-color: skyblue;
+  grid-area: wizard__title;
+}
+
+.wizard__title,
+.wizard-content-inner-container__title {
+  margin: 0 10px;
+  line-height: 50px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wizard__nav {
+  background-color: red;
+  grid-area: wizard__nav;
+  padding: 10px;
+}
+
+.wizard__content {
+  background-color: olive;
+  grid-area: wizard__content;
+}
+
+.wizard__footer {
+  background-color: yellow;
+  grid-area: wizard__footer;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.wizard__footer input:not(:last-child) {
+  margin-right: 5px;
+}
+
+.wizard-content-outer-container {
+  height: 100%;
+}
+
+.wizard-content-outer-container .active {
+  display: grid;
+  grid-template-rows: 50px 1fr;
+  height: 100%;
+}
+
+.wizard-content-inner-container__title {
+  background-color: salmon;
+}
+
+.wizard-content-inner-container__content {
+  background-color: white;
+  overflow: auto;
+  padding: 10px;
+}
+
+.wizard__footer input[disabled] {
+  opacity: 0.5;
+}

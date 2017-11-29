@@ -13,29 +13,10 @@
 </head>
 
 <body>
-    <div id="wizard1">
-        <ul class="nav nav-pills nav-stacked">
-            <li class="active">
-                <a href="#home" role="tab" data-toggle="tab">Home</a>
-            </li>
-            <li>
-                <a href="#profile" role="tab" data-toggle="tab">Profile</a>
-            </li>
-            <li>
-                <a href="#messages" role="tab" data-toggle="tab">Messages</a>
-            </li>
-            <li>
-                <a href="#settings" role="tab" data-toggle="tab">Settings</a>
-            </li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane active" id="home">home</div>
-            <div class="tab-pane" id="profile">profile</div>
-            <div class="tab-pane" id="messages">messages</div>
-            <div class="tab-pane" id="settings">settings</div>
-        </div>
-    </div>
 
+    <div id="wizard1">
+        <div id="home_content">Home</div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -48,25 +29,52 @@
     <script src="https://unpkg.com/vue@2.2.6"></script>
     <script src="../main.js"></script>
     <script>
-        function configureWizard() {
-            $("#wizard1").wizard({
-                modal: {
-                    active: true,
-                    width: "90%",
-                    title: "Título",
-                    backdrop: "static"
+        $(function () {
+            var steps = [{
+                    id: "home",
+                    name: "Home",
+                    title: "Welcome",
+                    validate: true,
+                    content: "#home_content"
                 },
-                size: {
-                    tabContent: {
-                        height: "350px"
+                {
+                    id: "first",
+                    name: "First",
+                    title: "FIRST",
+                    validate: true,
+                    ajax: {
+                        url: "first.html"
+                    }
+                },
+                {
+                    id: "second",
+                    name: "Second",
+                    title: "SECOND"
+                },
+                {
+                    id: "thrid",
+                    name: "thrid",
+                    title: "thrid"
+                }
+            ];
+            $("#wizard1").wizard({
+                steps: steps,
+                title: "Sergio",
+                events: {
+                    onValidate: function (step) {
+                        console.log("onValidate", step);
+                        var deferred = $.Deferred();
+                        deferred.resolve();
+                        return deferred.promise();
+                    },
+                    onAjaxDone: function (newStep, data, textStatus, jqXHR) {
+                        console.log("onAjaxDone", newStep, data, textStatus)
+                    },
+                    onAjaxFail: function (newStep, jqXHR, textStatus, errorThrown) {
+                        console.log("onAjaxDone", newStep, textStatus, errorThrown)
                     }
                 }
             });
-        }
-
-        $(function () {
-            configureWizard();
-            $("#wizard1").wizard("open");
         });
     </script>
 </body>

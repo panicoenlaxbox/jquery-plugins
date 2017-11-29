@@ -3,148 +3,125 @@
  * Copyright 2015, Sergio León
  * http://panicoenlaxbox.blogspot.com/
  */
-//https://decadecity.net/blog/2013/03/25/modal-windows-for-small-screens-using-bootstrap-and-vertical-media-queries
 (function ($) {
     "use strict";
 
-    function isRtl() {
-        return $("body").css("direction") === "rtl";
+    function getHtml(title, steps, buttons) {
+        var html =
+            "<div class='wizard'>\n" +
+            "\t<div class='wizard__title'>" + title + "</div>\n" +
+            "\t<div class='wizard__nav'>\n" +
+            "\t\t<ul class='nav nav-pills nav-stacked'>\n";
+        $.each(steps, function (index, element) {
+            html +=
+                "\t\t\t<li" + (index === 0 ? " class='active'" : "") + ">\n" +
+                "\t\t\t\t<a href='#" + element.id + "' role='tab' data-toggle='tab'>" + element.name + "</a>\n" +
+                "\t\t\t</li>\n";
+        });
+        html +=
+            "\t\t</ul>  \n" +
+            "\t</div>\n" +
+            "\t<div class='wizard__content'>\n" +
+            "\t\t<div class='tab-content wizard-content-outer-container'>\n";
+        $.each(steps, function (index, element) {
+            html +=
+                "\t\t\t<div class='tab-pane" + (index === 0 ? " active" : "") + " wizard-content-outer-container' id='" + element.id + "'>\n" +
+                "\t\t\t\t<div class='wizard-content-inner-container__title'>" + element.title + "</div>\n" +
+                "\t\t\t\t<div class='wizard-content-inner-container__content' data-id='" + element.id + "'></div>\n" +
+                "\t\t\t</div>\n";
+        });
+        html +=
+            "\t\t</div>\n" +
+            "\t</div>\n" +
+            "\t<div class='wizard__footer'>\n" +
+            "\t\t<input type='button' data-role='previous' value='" + buttons.previous.text + "'>\n" +
+            "\t\t<input type='button' data-role='next' value='" + buttons.next.text + "'>\n" +
+            "\t\t<input type='button' data-role='finish' value='" + buttons.finish.text + "'>\n" +
+            "\t</div>\n" +
+            "</div>";
+
+        return html;
     }
 
-    function manageButton($wizard, dataButton, disabled) {
-        var $button = $wizard.find("[data-button='" + dataButton + "']");
-        if (disabled) {
-            $button.attr("disabled", "disabled").addClass("disabled");
-        } else {
-            $button.removeAttr("disabled").removeClass("disabled");
-        }
-    }
-
-    function manageButtons($tab) {
-        var disablePrev = true;
-        var disableNext = true;
-        var disableFinish = true;
-        var previousTab = $tab.prev();
-        if (previousTab.length === 1) {
-            disablePrev = false;
-        }
-        var $nextTab = $tab.next();
-        if ($nextTab.length === 1) {
-            disableNext = false;
-        } else {
-            disableFinish = false;
-        }
-        var $wizard = $tab.parents(".wizard");
-        manageButton($wizard, "previous", disablePrev);
-        manageButton($wizard, "next", disableNext);
-        manageButton($wizard, "finish", disableFinish);
-    }
-
-    function Step(title, url, tabElement, contentElement, key, validate, $wizard) {
-        var self = this;
-        self.title = title;
-        self.url = url === undefined ? "" : url;
-        self.urlLoaded = false;
-        self.tabElement = tabElement;
-        self.contentElement = contentElement;
-        self.key = key || "";
-        self.validate = validate === undefined ? false : validate;
-        $(self.tabElement).children().on("click.wizard", function (e) {
-            e.preventDefault();
-            var $this = $(this);
-            if ($this.parent().hasClass("disabled")) {
-                return;
-            }
-            var settings = $wizard.data("wizard");
-            if (!settings.skipValidationOnTabClick && settings.currentTab) {
-                var currentIndex = [$(settings.currentTab).index()];
-                var index = $this.parent().index();
-                if (index > currentIndex) {
-                    var currentStep = settings.steps[currentIndex];
-                    if (currentStep.validate) {
-                        if (!currentStep.validate($wizard.data("wizard").events.onValidate)) {
-                            return;
-                        }
-                    }
-                }
-            }
-            settings.skipValidationOnTabClick = false;
-            if (!self.url || self.urlLoaded) {
-                $this.tab("show");
-                manageButtons($this.parent());
-            } else {
-                url = self.url;
-                if (settings.events.onBeforeLoadUrl) {
-                    var returnValue = settings.events.onBeforeLoadUrl(self);
-                    if (typeof returnValue === "string") {
-                        url = returnValue;
-                    } else if (typeof returnValue === "boolean" && returnValue === false) {
-                        $this.parent().addClass("disabled");
-                        return;
-                    }
-                }
-                tab.ajax.load({
-                    el: self.contentElement,
-                    url: url,
-                    overlay: {
-                        el: $wizard
-                    }
-                }).done(function () {
-                    var $form = $(self.contentElement).parents("form");
-                    if ($form.length === 1) {
-                        $.validator.unobtrusive.parse($form);
-                    }
-                    $this.tab("show");
-                    manageButtons($this.parent());
-                    self.urlLoaded = true;
-                }).fail(function (jqXHR) {
-                    $this.parent().addClass("disabled");
-                });
-            }
-        }).on("shown.bs.tab", function (e) {
-            $wizard.data("wizard").currentTab = $(e.target).parent()[0];
-            $wizard.find(".wizard-title").html(self.title);
-        }).on("show.bs.tab", function (e) {
-            var settings = $wizard.data("wizard");
-            if (settings.events.onTabShow) {
-                settings.events.onTabShow($wizard, self);
+    function createOverlay(zIndex, opacity, backgroundColor) {
+        return $("<div />", {
+            "data-role": "wizard-overlay",
+            css: {
+                "position": "fixed",
+                "top": 0,
+                "right": 0,
+                "left": 0,
+                "bottom": 0,
+                "opacity": opacity,
+                "background-color": backgroundColor,
+                "z-index": zIndex
             }
         });
-        self.validate = function (callback) {
-            var isValid = true;
-            var $form = $(self.contentElement).parents("form");
-            if ($form.length === 1 && $form.data("validator")) {
-                // How can I enable jquery validation on readonly fields?
-                // http://stackoverflow.com/questions/26838839/how-can-i-enable-jquery-validation-on-readonly-fields
-                var $els = $form.find("[readonly]");
-                $els.each(function () {
-                    $(this).removeAttr("readonly");
-                });
-                isValid = $form.valid();
-                $els.each(function () {
-                    $(this).attr("readonly", "readonly");
-                });
-            }
-            if (!isValid) {
-                return false;
-            } else {
-                if (callback) {
-                    isValid = callback(self);
-                }
-                return isValid;
-            }
-        };
     }
 
-    function getWidth(width) {
-        var css = {
-            width: width,
-            "margin-left": "-" + (parseInt(width, 10) / 2)
-        };
-        if (width.indexOf("%") !== -1) {
-            css["margin-left"] += "%";
+    function setButtonsAvailabilityByStep(step) {
+        var disablePrev = false;
+        var disableNext = false;
+        var disableFinish = false;
+        if (!step.$tab.parent().prev().exists()) {
+            disablePrev = true;
         }
-        return css;
+        if (!step.$tab.parent().next().exists()) {
+            disableNext = true;
+        } else {
+            disableFinish = true;
+        }
+        var $wizard = step.$tab.parents("[data-role='wizard']");
+        setButtonsAvailability($wizard, !disablePrev, !disableNext, !disableFinish);
+    }
+
+    function setButtonsAvailability($wizard, previous, next, finish) {
+        setButtonAvailability($wizard.find("input[data-role='previous']"), previous);
+        setButtonAvailability($wizard.find("input[data-role='next']"), next);
+        setButtonAvailability($wizard.find("input[data-role='finish']"), finish);
+    }
+
+    function setButtonAvailability($button, enabled) {
+        if (enabled) {
+            $button.removeAttr("disabled");
+        } else {
+            $button.attr("disabled", "disabled");
+        }
+    }
+
+    function disableButtons() {
+        setButtonsAvailability($wizard, false, false, false);
+    }
+
+    function Step(data) {
+        this.id = data.id;
+        this.name = data.name;
+        this.title = data.title;
+        this.validate = data.validate === undefined ? false : data.validate;
+        this.url = data.url === undefined ? null : data.url;
+        this.$tab = null;
+        this.$content = null;
+        this.index = 0;
+        this.hasPrevious = function () {
+            return this.index > 0;
+        };
+        this.ajax = $.extend(true, {}, {
+            url: null,
+            checkSelector: null
+        }, data.ajax);
+        if (data.content) {
+            if (data.content instanceof jQuery) {
+                this.$content = data.content;
+            } else {
+                this.$content = $(data.content);
+            }
+        }
+    }
+
+    function getStep($tab) {
+        var $wizard = $tab.parents("[data-role='wizard']");
+        var index = $wizard.find(".wizard__nav [data-toggle='tab']").index($tab);
+        return $wizard.data("wizard").steps[index];
     }
 
     var methods = {
@@ -152,231 +129,98 @@
             return this.each(function () {
                 var $wizard = $(this);
                 if (!$wizard.data("wizard")) {
-                    $wizard.hide();
                     var settings = $.extend(true, {}, $.fn.wizard.defaults, $.dataset.parse($wizard.data()), options);
-                    settings.skipValidationOnTabClick = false;
-                    $wizard.addClass("wizard").css({
-                        "float": "left",
-                        "width": "100%"
+                    settings.steps = settings.steps.map(function (element) {
+                        return new Step(element);
                     });
-                    var $tabs = $wizard.find(".nav:eq(0)");
-                    $tabs.wrap($("<div />", {
-                        "class": "wizard-steps",
-                        css: {
-                            "float": isRtl() ? "right" : "left",
-                            "width": settings.size.stepsWidth
+                    var html = getHtml(settings.title, settings.steps, settings.buttons);
+                    var $html = $(html);
+                    settings.steps.forEach(function (element, index) {
+                        element.index = index;
+                        element.$tab = $html.find(".wizard__nav [href='#" + element.id + "']");
+                        if (element.$content) {
+                            element.$content.detach().appendTo($html.find("[data-id='" + element.id + "']"));
                         }
-                    }));
-                    var $tabContent = $wizard.children(".tab-content");
-                    $tabContent.css({
-                        "margin": isRtl() ? "10px 10px 10px 0" : "10px 0 10px 10px"
+                        element.$content = $html.find("[data-id='" + element.id + "']");
                     });
-                    $tabContent.css({
-                        "height": settings.size.tabContent.height,
-                        "overflow": "auto"
-                    });
-                    $tabContent.wrap($("<div />", {
-                        "class": "wizard-content",
-                        css: {
-                            "float": isRtl() ? "left" : "right"
-                        }
-                    }));
-                    var $wizardContent = $wizard.find(".wizard-content");
-                    $wizardContent.css({
-                        width: settings.size.contentWidth
-                    });
-                    $wizardContent.prepend($("<div />", {
-                        "class": "wizard-title",
-                        css: {
-                            "text-indent": "10px",
-                            "font-size": "x-large",
-                            "font-weight": "bold",
-                            "height": "40px",
-                            "line-height": "40px"
-                        }
-                    }));
-                    $wizardContent.append($("<div />", {
-                        "class": "wizard-buttons",
-                        css: {
-                            "text-align": isRtl() ? "left" : "right",
-                        }
-                    }));
-                    if (settings.modal.active) {
-                        var $wizardModal = $(".wizard-modal");
-                        if ($wizardModal.length === 1) {
-                            $wizardModal.remove();
-                        }
-                        var html =
-                            "<div class='wizard-modal modal fade' tabindex='-1'>" +
-                            "<div class='modal-dialog " + settings.modal.optionalSize + "'>" +
-                            "<div class='modal-content'>" +
-                            "<div class='modal-header'>" +
-                            "<button type='button' class='close' data-dismiss='modal'>&times;</button>" +
-                            "<h4 class='modal-title'>" + (settings.modal.title ? settings.modal.title : "&nbsp;") + "</h4>" +
-                            "</div>" +
-                            "<div class='modal-body'></div>" +
-                            "</div>" +
-                            "</div>" +
-                            "</div>";
-                        $("body").append(html);
-                        $wizardModal = $(".wizard-modal");
-                        if (settings.modal.width) {
-                            var width = getWidth(settings.modal.width);
-                            $wizardModal.css(width);
-                        }
-                        var $el = $wizard.parents("form");
-                        if ($el.length === 0) {
-                            $el = $wizard;
-                        }
-                        var $wizardModalBody = $wizardModal.find(".modal-body");
-                        $wizardModalBody.css({
-                            "max-height": "initial"
-                        }).append($el);
-
-                        if (settings.style.modalBodyBackgroundColor) {
-                            $wizardModal.find(".modal-body").css('background-color', settings.style.modalBodyBackgroundColor);
-                        }
-                    }
-                    var $wizardButtons = $wizardContent.find(".wizard-buttons");
-                    $wizardButtons.append(
-                        "<button type='button' class='btn disabled " + settings.style.previousButtonClass + "' data-button='previous'>" + settings.literals.previous + "</button>&nbsp;" +
-                        "<button type='button' class='btn disabled " + settings.style.nextButtonClass + "' data-button='next'>" + settings.literals.next + "</button>&nbsp;" +
-                        "<button type='button' class='btn disabled " + settings.style.finishButtonClass + "' data-button='finish'>" + settings.literals.finish + "</button>");
-                    $wizardButtons.find("button").on("click.wizard", function (e) {
-                        var $tab = $tabs.find(".active");
-                        var step = settings.steps[$tab.index()]; // http://api.jquery.com/index/
-                        switch ($(this).data("button")) {
+                    var $overlay = createOverlay(0, settings.overlay.style.opacity, settings.overlay.style.backgroundColor);
+                    $("body").append($overlay);
+                    $wizard.append($html);
+                    $wizard.css({
+                        "position": "absolute",
+                        "top": "50%",
+                        "left": "50%",
+                        "transform": "translate(-50%, -50%)",
+                        "z-index": 1
+                    }).attr("data-role", "wizard");
+                    $wizard.find(".wizard__footer input").on("click", function (e) {
+                        var $currentTab = $wizard.find(".wizard__nav .active [data-toggle='tab']");
+                        var role = $(this).data("role");
+                        switch (role) {
                             case "previous":
-                                var previousTab = $tab.prev();
-                                if (previousTab.length === 1) {
-                                    previousTab.children().click();
-                                }
+                                $currentTab.parent().prev().children().tab("show");
                                 break;
                             case "next":
-                                var nextTab = $tab.next();
-                                if (step.validate) {
-                                    if (step.validate(settings.events.onValidate)) {
-                                        nextTab.removeClass("disabled");
-                                        settings.skipValidationOnTabClick = true;
-                                    } else {
-                                        return;
-                                    }
-                                } else {
-                                    nextTab.removeClass("disabled");
-                                }
-                                nextTab.children().click();
+                                $currentTab.parent().next().children().tab("show");
                                 break;
                             case "finish":
-                                if (step.validate) {
-                                    if (!step.validate(settings.events.onValidate)) {
-                                        return;
-                                    }
-                                }
-                                settings.events.onFinish($wizard);
+                                settings.events.onFinish();
                                 break;
                         }
                     });
-                    $wizard.after("<div class='clear'></div>");
-                    var steps = [];
-                    var lis = $tabs.children();
-                    lis.each(function (index, elem) {
-                        var $elem = $(elem);
-                        var $a = $elem.children();
-                        var title = $elem.data("title") || $a.text();
-                        var url = $elem.data("url");
-                        var contentElement = $($a.attr("href"))[0];
-                        var key = $elem.data("key");
-                        var validate = $elem.data("validate");
-                        if (validate === undefined) {
-                            validate = false;
+
+                    $wizard.find(".wizard__nav [data-toggle='tab']").on("show.bs.tab", function (e) {
+                        var newStep = getStep($(e.target));
+                        var currentStep = getStep($(e.relatedTarget));
+
+                        var backward = newStep.index < currentStep.index;
+                        if (backward) {
+                            return;
                         }
-                        var step = new Step(title, url, $elem[0], contentElement, key, validate, $wizard);
-                        steps.push(step);
-                        if (index > 0) {
-                            $elem.addClass("disabled");
+
+                        if (currentStep.validate && !("_ignore_validation" in newStep)) {
+                            setTimeout(function () {
+                                $wizard.block();
+                                settings.events.onValidate(currentStep).done(function () {
+                                    newStep._ignore_validation = true;
+                                    newStep.$tab.tab("show");
+                                }).always(function () {
+                                    $wizard.unblock();
+                                });
+                            }, 0);
+                            return false;
                         }
+                        delete newStep._ignore_validation;
+
+                        var loadUrl = (newStep.ajax.url && !("_ignore_next_url" in newStep) && (newStep.$content.is(":empty") || (!newStep.$content.is(":empty") && newStep.ajax.checkSelector && !$(checkSelector, newStep.$content).exists())));
+                        if (loadUrl) {
+                            setTimeout(function () {
+                                $wizard.block();
+                                $.loadUrl(newStep.$content, newStep.ajax.url).done(function (data, textStatus, jqXHR) {
+                                    newStep._ignore_validation = true;
+                                    newStep._ignore_next_url = true;
+                                    newStep.$tab.tab("show");
+                                    (settings.events.onAjaxDone || $.noop)(newStep, data, textStatus, jqXHR);
+                                }).fail(function (jqXHR, textStatus, errorThrown) {
+                                    (settings.events.onAjaxFail || $.noop)(newStep, jqXHR, textStatus, errorThrown);
+                                }).always(function () {
+                                    $wizard.unblock();
+                                });
+
+                            }, 0);
+                            return false;
+                        }
+                        delete newStep._ignore_next_url;
+
                     });
-                    settings.steps = steps;
+                    $wizard.find(".wizard__nav [data-toggle='tab']").on("shown.bs.tab", function (e) {
+                        var currentStep = getStep($(e.target));
+                        setButtonsAvailabilityByStep(currentStep);
+                    });
                     $wizard.data("wizard", settings);
-                    if (settings.whenToClickFirstStep === "init") {
-                        $(steps[0].tabElement).children().click();
-                    }
+                    setButtonsAvailabilityByStep(settings.steps[0]);
                 }
             });
-        },
-        open: function (reset) {
-            if (reset) {
-                methods.resetAllAjaxSteps.call(this);
-            }
-            return this.each(function () {
-                var $this = $(this);
-                var settings = $this.data("wizard");
-                var callback = function () {
-                    if (settings.events.onShow) {
-                        settings.events.onShow($this);
-                    }
-                    if (settings.whenToClickFirstStep === "open") {
-                        $(settings.steps[0].tabElement).children().click();
-                    }
-                };
-                if (settings.modal.active) {
-                    $this.show(function () {
-                        var $modal = $this.parents(".wizard-modal");
-                        $modal.one("shown.bs.modal", callback);
-                        $modal.modal({
-                            show: true,
-                            backdrop: settings.modal.backdrop
-                        });
-                    });
-                } else {
-                    $this.show(callback);
-                }
-            });
-        },
-        close: function () {
-            return this.each(function () {
-                var $this = $(this);
-                $this.hide();
-                if ($this.data("wizard").modal.active) {
-                    $this.parents(".wizard-modal").modal("hide");
-                }
-            });
-        },
-        step: function (key) {
-            var step;
-            $.each(this.data("wizard").steps, function (index, value) {
-                if (value.key === key) {
-                    step = value;
-                    return false;
-                }
-            });
-            return step;
-        },
-        modalTitle: function (title) {
-            return this.each(function () {
-                var $this = $(this);
-                if ($this.data("wizard").modal.active) {
-                    $this.data("wizard").modal.title = title;
-                    $this.parents(".modal-dialog").find(".modal-title").html(title);
-                }
-            });
-        },
-        resetAjaxStep: function (key) {
-            if (typeof key === "string") {
-                key = [key];
-            }
-            var self = this;
-            $.each(key, function (index, element) {
-                var step = methods.step.call(self, element);
-                $(step.contentElement).empty();
-                step.urlLoaded = false;
-            });
-        },
-        resetAllAjaxSteps: function () {
-            var steps = this.data("wizard").steps.map(function (currentValue) {
-                return currentValue.key;
-            });
-            methods.resetAjaxStep.call(this, steps);
         }
     };
 
@@ -391,37 +235,35 @@
     };
 
     $.fn.wizard.defaults = {
-        whenToClickFirstStep: "init", //init, open
-        zIndex: null,
+        title: null,
         events: {
-            onShow: null,
-            onTabShow: null,
-            onFinish: null,
             onValidate: null,
-            onBeforeLoadUrl: null
+            onAjaxDone: null,
+            onAjaxFail: null,
+            // onShow: null,
+            // onTabShow: null,
+            // onFinish: null,
+            // onBeforeLoadUrl: null
         },
-        style: {
-            previousButtonClass: "btn-default",
-            nextButtonClass: "btn-primary",
-            finishButtonClass: "btn-success"
+        buttons: {
+            previous: {
+                text: "Anterior",
+                className: "btn-default"
+            },
+            next: {
+                text: "Siguiente",
+                className: "btn-primary"
+            },
+            finish: {
+                text: "Finalizar",
+                className: "btn-success"
+            },
         },
-        modal: {
-            active: false,
-            title: "",
-            optionalSize: "",
-            width: "",
-            backdrop: true
-        },
-        literals: {
-            previous: "Anterior",
-            next: "Siguiente",
-            finish: "Finalizar"
-        },
-        size: {
-            stepsWidth: "20%",
-            contentWidth: "80%",
-            tabContent: {
-                height: "400px"
+        steps: [],
+        overlay: {
+            style: {
+                backgroundColor: "#000",
+                opacity: 0.5
             }
         }
     };
