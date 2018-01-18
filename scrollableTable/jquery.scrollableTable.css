@@ -1,0 +1,86 @@
+table {
+    border-collapse: collapse;
+}
+
+.ft_container table {
+    background-color: #fff;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-width: 0;
+    margin: 0;
+}
+
+.ft_container table tr th {
+    font-weight: bold;
+}
+
+.ft_container table thead {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.ft_container table tr th,
+.ft_container table tr td {
+    border: 1px solid #CCCCCC;
+    border-bottom-width: 1px;
+    border-left-width: 0;
+    border-right-width: 1px;
+    border-top-width: 0;
+    overflow: hidden;
+    padding: 2px 4px;
+    word-wrap: break-word;
+}
+
+.ft_container table tr:first-child td,
+.ft_container table tr:first-child th {
+    border-color: #ccc;
+    border-top-width: 1px;
+}
+
+.ft_container table tr td:first-child,
+.ft_container table tr th:first-child {
+    border-color: #ccc;
+    border-left-width: 1px;
+}
+
+.ft_container {
+    overflow: hidden;
+    padding: 0;
+}
+
+.ft_rel_container {
+    border-width: 0;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.ft_rc {
+    position: absolute;
+    z-index: 1005;
+}
+
+.ft_r,
+.ft_c {
+    position: relative;
+}
+
+.ft_rwrapper,
+.ft_cwrapper {
+    border-width: 0;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    z-index: 1001;
+}
+
+.ft_scroller {
+    height: 100%;
+    margin: 0;
+    overflow: auto;
+    padding: 0;
+}
